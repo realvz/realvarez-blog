@@ -1,13 +1,13 @@
 {
-  "title": "Title of the website. Update me.",
-  "url": "https://update-me.com",
-  "domain": "update-me.com",
-  "description": "Description of the website. Update me.",
+  "title": "Re Alvarez Parmar's Blog",
+  "url": "https://blog.realvarez.com",
+  "domain": "realvarez.com",
+  "description": "A collection of writing by Re Alvarez Parmar",
   "genre": "Insert a schema.org genre",
-  "googleAnalyticsId": "GA ID. Update me. Note, that this is not compatible with the not-yet-commonly used version 4 of Google Analytics",
+  "googleAnalyticsId": "G-B5XRB3YVTR",
   "sendWebVitals": false,
   "feed": {
-    "subtitle": "Subtitle. Update me.",
+    "subtitle": "Re's blog feed",
     "filename": "feed.xml",
     "path": "/feed/feed.xml",
     "id": "https://update-me.com"
@@ -17,10 +17,10 @@
     "url": "https://update-me.com/feed/feed.json"
   },
   "author": {
-    "name": "Author Name. Update me.",
-    "twitterHandle": "update_me"
+    "name": "",
+    "twitterHandle": "realz"
   },
   "publisher": {
-    "name": "Publisher name. Update me."
+    "name": ""
   }
 }
