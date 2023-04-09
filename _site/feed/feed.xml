@@ -1,0 +1,898 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+	<title>Re Alvarez Parmar&#39;s Blog</title>
+	<subtitle>Re&#39;s blog feed</subtitle>
+	
+	<link href="https://blog.realvarez.com/feed/feed.xml" rel="self"/>
+	<link href="https://blog.realvarez.com"/>
+	<updated>2023-04-03T17:00:00-07:00</updated>
+	<id>https://update-me.com</id>
+	<author>
+		<name></name>
+		<email></email>
+	</author>
+	
+	<entry>
+		<title>How much do my Amazon EKS nodes cost?</title>
+		<link href="https://blog.realvarez.com/posts/how-much-do-eks-nodes-cost/"/>
+		<updated>2022-02-04T16:00:00-08:00</updated>
+		<id>https://blog.realvarez.com/posts/how-much-do-eks-nodes-cost/</id>
+		<content type="html">
+		  &lt;p&gt;If you want to know the cost of running Amazon EKS nodes, AWS Cost Explorer is your friend.&lt;/p&gt;
+&lt;p&gt;&lt;a href=&quot;https://aws.amazon.com/aws-cost-management/aws-cost-explorer/&quot;&gt;AWS Cost Explorer&lt;/a&gt; helps you analyze your AWS bill. Cost Explorer has an easy-to-use interface that lets you visualize, understand, and manage your AWS costs and usage over time.&lt;/p&gt;
+&lt;p&gt;Cost Explorer supports breaking down costs using &lt;a href=&quot;https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/Using_Tags.html&quot;&gt;tags&lt;/a&gt;. A tag is a label that you assign to an AWS resource. Tags enable you to categorize your AWS resources by, for example, purpose, owner, or environment.&lt;/p&gt;
+&lt;p&gt;Kubernetes cluster deployment tools like &lt;code&gt;eksctl&lt;/code&gt; automatically add default tags to EC2 instances that are part of a managed node group. Customer can view tags attached to their nodes in the AWS Management Console.&lt;/p&gt;
+&lt;p&gt;To view the tags attached to your EKS nodes, go to the AWS Management Console and inspect the tags. You can also use the &lt;a href=&quot;https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeTags.html&quot;&gt;&lt;code&gt;DescribeTags&lt;/code&gt; API&lt;/a&gt; to query tags using AWS CLI or SDK.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://res.craft.do/user/full/9d54cc03-adfe-f72f-3389-565eb7356d1d/99997738-88A8-4420-9881-286553E32476_2/hqNzdOTLsvdLYOyrPn70lF2cToHkSbhIDtm4xr8RA08z/Image.jpeg&quot; alt=&quot;Image.jpeg&quot;&gt;&lt;/p&gt;
+&lt;p&gt;Pick an EC2 instance that&#39;s part of your EKS cluster, note its tags, select a tag, like &lt;code&gt;eks:cluster-name&lt;/code&gt;, and verify that all nodes have that label. You will later use this tag to separate the costs of Kubernetes nodes from the rest of EC2 usage in your account(s).&lt;/p&gt;
+&lt;h2 id=&quot;activate-tags-in-billing&quot;&gt;Activate tags in billing &lt;a class=&quot;direct-link&quot; href=&quot;#activate-tags-in-billing&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;Once you have identified the tag using which you are going to identify EKS EC2 nodes, you’ll have to activate that tag in the AWS Billing and Cost Management console. You’ll need &lt;a href=&quot;https://docs.aws.amazon.com/awsaccountbilling/latest/aboutv2/control-access-billing.html&quot;&gt;privileges&lt;/a&gt; to make changes.&lt;/p&gt;
+&lt;p&gt;To activate your tags using the AWS Management Console:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;Sign in to the AWS Management Console and open the AWS Billing console at &lt;a href=&quot;https://console.aws.amazon.com/billing/&quot;&gt;https://console.aws.amazon.com/billing/&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;In the navigation pane, choose Cost Allocation Tags.&lt;/li&gt;
+&lt;li&gt;Select the tags that you want to activate.&lt;/li&gt;
+&lt;li&gt;Choose Activate.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;&lt;img src=&quot;https://res.craft.do/user/full/9d54cc03-adfe-f72f-3389-565eb7356d1d/263EE126-DAD2-4F52-856E-6F065BF89E53_2/AwhushwYYUHGexRRGMqTseZBAfi0u2rQP8k2k8xeNpoz/Image.jpeg&quot; alt=&quot;Image.jpeg&quot;&gt;&lt;/p&gt;
+&lt;p&gt;After you select your tags for activation, it can take &lt;strong&gt;up to 24 hours&lt;/strong&gt; for tags to activate.&lt;/p&gt;
+&lt;p&gt;Billing has AWS-generated cost allocation tags that customers can use to identify costs.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://res.craft.do/user/full/9d54cc03-adfe-f72f-3389-565eb7356d1d/doc/0C3F9990-AB32-4876-85EB-CE7F7D9E4C83/123DF0AF-8C9D-4625-8816-FF6A2511B596_2/lHrGroWK3tRZFJVuLqOdx2xPWKEEADFIo5teWiGeIbgz/Image.jpeg&quot; alt=&quot;Image.jpeg&quot;&gt;&lt;/p&gt;
+&lt;h2 id=&quot;view-charges-in-aws-cost-explorer&quot;&gt;View charges in AWS Cost Explorer &lt;a class=&quot;direct-link&quot; href=&quot;#view-charges-in-aws-cost-explorer&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;Navigate to AWS Cost Explorer and create a new report&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://res.craft.do/user/full/9d54cc03-adfe-f72f-3389-565eb7356d1d/3B13ED5A-B51C-4109-8D51-E3BC9187BF8A_2/dv6xOgqDiX8lQMHmPz0yqeySZ6OgPqEBAqRLyEifu3gz/Image.jpeg&quot; alt=&quot;Image.jpeg&quot;&gt;&lt;/p&gt;
+&lt;p&gt;In the next screen, choose &lt;strong&gt;Cost and usage&lt;/strong&gt;. Then scroll to the bottom of page and choose &lt;strong&gt;create report.&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://res.craft.do/user/full/9d54cc03-adfe-f72f-3389-565eb7356d1d/doc/0C3F9990-AB32-4876-85EB-CE7F7D9E4C83/75A8974D-92E5-487B-8A66-F1DA634E81B0_2/aoYH9yyFtz8vHHrxMuthXXXaBlGYAuLdeUxbPeTqDCIz/Image.jpeg&quot; alt=&quot;Image.jpeg&quot;&gt;&lt;/p&gt;
+&lt;p&gt;In the next screen, configure a &lt;strong&gt;Service&lt;/strong&gt; filter, select EC2-Instances, and apply filter.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://res.craft.do/user/full/9d54cc03-adfe-f72f-3389-565eb7356d1d/doc/0C3F9990-AB32-4876-85EB-CE7F7D9E4C83/A360630B-8E50-42EE-8245-C5AADFA5BFFC_2/wmtRAMwgAJWxXCTAMjeTGPogUhEmOdiBnRxOuTylyuYz/Image.jpeg&quot; alt=&quot;Image.jpeg&quot;&gt;&lt;/p&gt;
+&lt;p&gt;Create a &lt;strong&gt;Tag&lt;/strong&gt; filter, select the tag you activated in billing, and apply. Be sure to select only &lt;code&gt;true&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;In my case, my nodes had the &lt;code&gt;eks:cluster-name&lt;/code&gt; tag.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://res.craft.do/user/full/9d54cc03-adfe-f72f-3389-565eb7356d1d/doc/7B8C4159-87D5-4FBF-847F-0AA3DB34730C/22D7482D-E383-43BC-B123-5D4C805D7C52_2/PPl1BfJ7puxg0H4lPCLqyxpX58r4cEAO0R7iTzLRsLIz/Image&quot; alt=&quot;Image&quot;&gt;&lt;/p&gt;
+&lt;p&gt;Now Cost Explorer shows just the charges for my cluster.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://res.craft.do/user/full/9d54cc03-adfe-f72f-3389-565eb7356d1d/AE2DDB1D-DD37-409F-81C6-B5F447210571_2/YpYzKtND10nuEyoY0qifZWzkxyyX31CW511EIjI02xwz/Image.jpeg&quot; alt=&quot;Image.jpeg&quot;&gt;&lt;/p&gt;
+&lt;p&gt;Now I know that in Feb ’22, I paid roughly $3000 for the nodes that are part of the cluster named “Socrates.”&lt;/p&gt;
+
+			
+				
+				
+				&lt;img src=&quot;https://blog.realvarez.com/api/ga?v=1&amp;_v=j83&amp;t=pageview&amp;dr=https%3A%2F%2Frss-feed-reader.com&amp;_s=1&amp;dh=realvarez.com&amp;dp=%2Fposts%2Fhow-much-do-eks-nodes-cost%2F&amp;ul=en-us&amp;de=UTF-8&amp;dt=How%20much%20do%20my%20Amazon%20EKS%20nodes%20cost%3F&amp;tid=G-B5XRB3YVTR&quot; width=&quot;1&quot; height=&quot;1&quot; style=&quot;display:none&quot; alt=&quot;&quot;&gt;
+			
+		</content>
+	</entry>
+	
+	<entry>
+		<title>Book Review - 12 Rules for Life - Jordan Peterson</title>
+		<link href="https://blog.realvarez.com/posts/book-review-12-rules-jp/"/>
+		<updated>2022-04-17T17:00:00-07:00</updated>
+		<id>https://blog.realvarez.com/posts/book-review-12-rules-jp/</id>
+		<content type="html">
+		  &lt;p&gt;Of all the books I have read, this has to be one of the most polarizing. I must admit that I started this book with a heavy bias against the author, thanks to his infamy on progressive subs on Reddit. The first few pages didn’t make it any easier; the prologue was filled with things that you’d see on a Twitter “#ShitDonaldTrumpSays” thread.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://res.craft.do/user/full/9d54cc03-adfe-f72f-3389-565eb7356d1d/doc/7D92D31F-484C-458F-87D2-0566989F03F7/7323E51C-64C0-4940-8063-8FBE31429A1A_2/pKAZNxYoyn4QySBCTI4laKPof2JRUnKpuvWfeMLDt3Yz/Image&quot; alt=&quot;Image&quot;&gt;&lt;/p&gt;
+&lt;p&gt;In the beginning, I found author’s self-righteous tone off-putting. I admit that I skipped pages whenever Bible was the sole exemplary. Gradually, though, I found myself agreeing more and more with the author, albeit at a very fundamental level. When I  agreed, I still found his method of deduction dubious and massively sexist.&lt;/p&gt;
+&lt;p&gt;His points of reference, when it comes to sexism, are so flawed (in my humble opinion) that the reader is tempted to discount the author entirely, but if you wade through much of his ramblings, you may find a learning or two. At this point, you are better off reading a more concise self-help book because the author loves to ramble a lot. Which is fine for readers that don’t care about the length of the book. But if you’re reading this book for self-improvement, 1/ this is not the most well-written self-help book (its a good book though) and 2/ the author’s tone is polarizing, for almost every ethnicity, ideology, or sex.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://res.craft.do/user/full/9d54cc03-adfe-f72f-3389-565eb7356d1d/doc/7D92D31F-484C-458F-87D2-0566989F03F7/7BC4C43E-4943-4F3B-BC14-2523A2464F8E_2/Dl5UyQmnDraSK2dQvHjNyu7RHZyxsYrodUox2ukUcAAz/Image&quot; alt=&quot;Image&quot;&gt;&lt;/p&gt;
+&lt;p&gt;The book advocates a lot about masculinity. It’s innate aggression. How women, who failed as the leaders of ancient society, are on a constant pursuit to introduce feminine qualities such as “agreeableness” (who’d have thunk 🤯) to rein in the masculine aggression. The aggression should be fostered as it pushes young men to innovate so that they can get ride their bikes faster. Is the author saying that only men are capable of doing stupid stuff you&#39;d generally see on MTV Jackass 🤔.&lt;/p&gt;
+&lt;p&gt;Time and time again, the author justifies violence or aggression. I have a feeling the author and Will Smith will be good friends.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://res.craft.do/user/full/9d54cc03-adfe-f72f-3389-565eb7356d1d/doc/7D92D31F-484C-458F-87D2-0566989F03F7/19272A08-8F3E-48E8-92FF-AD3DF1E6E7E4_2/l71ZKFKmFPX6KZ6efXLSFUfZgIHrFg99ulqXCRw2Iykz/Image&quot; alt=&quot;Image&quot;&gt;&lt;/p&gt;
+&lt;p&gt;I find it interesting (to say the least) that despite being a psychologist, the author has things like to say:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;“Girls can win by winning in their own hierarchy—by being good at what girls value, as girls. They can add to this victory by winning in the boys’ hierarchy. Boys, however, can only win by winning in the male hierarchy. They will lose status, among girls and boys, by being good at what girls value. It costs them in reputation among the boys, and in attractiveness among the girls. &lt;strong&gt;Girls aren’t attracted to boys who are their friends, even though they might like them, whatever that means.&lt;/strong&gt; They are attracted to boys who win status contests with other boys. If you’re male, however, you just can’t hammer a female as hard as you would a male. Boys can’t (won’t) play truly competitive games with girls. It isn’t clear how they can win. As the game turns into a girls’ game, therefore, the boys leave.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;So, basically rich woman should compare resumes before forming romantic ties 👍🏼. In my view the author&#39;s message is not &lt;em&gt;that&lt;/em&gt; sexist, but it&#39;s definitely worded to encourage misinterpretations. Great writing or flawed ideology ⚖️?&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;“If they’re healthy, women don’t want boys. They want men. They want someone to contend with; someone to grapple with. If they’re tough, they want someone tougher. If they’re smart, they want someone smarter. They desire someone who brings to the table something they can’t already provide. This often makes it hard for tough, smart, attractive women to find mates: there just aren’t that many men around who can outclass them enough to be considered desirable ”&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Men enforce a code of behavior on each other, when working together. Do your work. Pull your weight. Stay awake and pay attention. Don’t whine or be touchy. Stand up for your friends. Don’t suck up and don’t snitch. Don’t, in the immortal words of Arnold Schwarzenegger, be a &lt;strong&gt;girlie man&lt;/strong&gt;. Don’t be dependent. At all. Ever. Period. The harassment that is part of acceptance on a working crew is a test: are you tough, entertaining, competent and reliable? If not, go away. Simple as that. We don’t need to feel sorry for you. We don’t want to put up with your narcissism, and we don’t want to do your work.”&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;I was not surprised to learn that the author doesn’t believe in feminism. He goes on to say that women have little to contribute in many ways&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;“Furthermore, even if women contributed nothing substantial to art, literature and the sciences prior to the 1960s and the feminist revolution (which is not something I believe), then the role they played raising children and working on the farms was still instrumental in raising boys and freeing up men—a very few men—so that humanity could propagate itself and strive forward.”&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;In his opinion there have been many men like the tampon king of India that have advocated for women. I am still unclear how that justifies not believing in feminism but 🤷🏽‍♂️.&lt;/p&gt;
+&lt;p&gt;I did enjoy author’s take on classics like Dostoevsky, Sartre, and other western European philosophers. Although, I found his interoperation of Hansel and Gretel hilarious 😂.&lt;/p&gt;
+
+			
+				
+				
+				&lt;img src=&quot;https://blog.realvarez.com/api/ga?v=1&amp;_v=j83&amp;t=pageview&amp;dr=https%3A%2F%2Frss-feed-reader.com&amp;_s=1&amp;dh=realvarez.com&amp;dp=%2Fposts%2Fbook-review-12-rules-jp%2F&amp;ul=en-us&amp;de=UTF-8&amp;dt=Book%20Review%20-%2012%20Rules%20for%20Life%20-%20Jordan%20Peterson&amp;tid=G-B5XRB3YVTR&quot; width=&quot;1&quot; height=&quot;1&quot; style=&quot;display:none&quot; alt=&quot;&quot;&gt;
+			
+		</content>
+	</entry>
+	
+	<entry>
+		<title>Close observability gaps with custom metrics</title>
+		<link href="https://blog.realvarez.com/posts/observability-custom-metrics/"/>
+		<updated>2022-05-05T17:00:00-07:00</updated>
+		<id>https://blog.realvarez.com/posts/observability-custom-metrics/</id>
+		<content type="html">
+		  &lt;blockquote&gt;
+&lt;p&gt;&lt;em&gt;Which application metrics should you collect?&lt;/em&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;I frequently engage with customers that are amid breaking their monolithic applications into smaller microservices. Many teams with also see this migration as an opportunity to make applications more observable. As a result, customers inquire which metrics they should monitor for a typical cloud native application.&lt;/p&gt;
+&lt;p&gt;Previously, when a customer asked me how to instrument a service, I pointed them to the well known &lt;a href=&quot;https://grafana.com/blog/2018/08/02/the-red-method-how-to-instrument-your-services/&quot;&gt;USE and RED methods&lt;/a&gt;. But, I felt the response wasn’t thorough. A list of specific metrics to monitor can be helpful for teams building cloud native applications. This post is an attempt to provide a list of metrics to collect in a typical application. Not all the metrics listed below apply to every application type. For example, batch-like workloads rarely serve traffic, and resultantly, don&#39;t need to keep a log of requests-served.&lt;/p&gt;
+&lt;p&gt;The goal of this document is to help developers come up with the golden signals for their applications.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Golden Signals, a term used first in the &lt;a href=&quot;https://sre.google/sre-book/monitoring-distributed-systems/&quot;&gt;Google SRE handbook&lt;/a&gt;. Golden Signals are four metrics that will give you a very good idea of the real health and performance of your application as seen by the actors interacting with that service, whether they are final users or another service in your microservice application.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h2 id=&quot;observability&quot;&gt;Observability &lt;a class=&quot;direct-link&quot; href=&quot;#observability&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;Cloud best practices recommend building systems that are observable. While the word observability (or “&lt;em&gt;O11y&lt;/em&gt;” as it is popularly known) doesn’t have an official definition, it is the measure of a system’s ability to expose its internal state. The three pillars of observability are logs, metrics, and traces.&lt;/p&gt;
+&lt;p&gt;Modern systems are designed to produce logs, &lt;em&gt;emit&lt;/em&gt; metrics, and provide traces to help developers and operators understand its internal state.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;a href=&quot;https://giedrius.blog/2019/05/11/push-vs-pull-in-monitoring-systems/&quot;&gt;Push vs Pull&lt;/a&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Emitting metrics by exposing them on an externally accessible HTTP endpoint is gaining wider adoption thanks to developers adopting Prometheus for monitoring. In this model, Prometheus pulls metrics by scraping the application’s &lt;code&gt;/metrics&lt;/code&gt; endpoint.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;blockquote&gt;
+&lt;p&gt;When you run Node Exporter, it publishes metrics at &lt;code&gt;http://localhost:9100/metrics&lt;/code&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;Observability tools aggregate and analyze data from different sources to help you detect issues and identify bottlenecks. The goal is to use these system signals to improve its reliability and prevent downtime.&lt;/p&gt;
+&lt;p&gt;AIOps products like &lt;a href=&quot;https://aws.amazon.com/devops-guru/&quot;&gt;Amazon DevOps Guru&lt;/a&gt; can also detect anomalies using your application&#39;s logs, metrics, and traces (and other sources) and give you early signals to prevent a potential disruption.&lt;/p&gt;
+&lt;h2 id=&quot;metrics-to-collect&quot;&gt;Metrics to collect &lt;a class=&quot;direct-link&quot; href=&quot;#metrics-to-collect&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;For an application to function as designed, the application and its underlying system have to be &lt;em&gt;healthy&lt;/em&gt;. Host metrics inform the operator of the host’s and infrastructure resource usage, like CPU, memory, I/O, etc. If you use Prometheus, &lt;a href=&quot;https://github.com/prometheus/node_exporter&quot;&gt;Node Exporter&lt;/a&gt; collects this information automatically for you.&lt;/p&gt;
+&lt;p&gt;Host metrics rarely differ. Whether we run a process on an EC2 instance or a Raspberry Pi, we’re interested in the same metrics.&lt;/p&gt;
+&lt;p&gt;Unlike host metrics, application metrics are unique to each microservice. Application metrics are supposed to provide the operator the information so they can do these things:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;Identify future areas of improvement by providing code-specific measurements. Application monitoring or APM tools provide measurements over a segment of time that developers can analyze.&lt;/li&gt;
+&lt;li&gt;When the system fails, provide information for troubleshooting and prevention.&lt;/li&gt;
+&lt;li&gt;In some cases, provide early signals to business. For example, if the application exposes, the &lt;em&gt;orders&lt;/em&gt; it has processed in the last 60 minutes can be tracked using the monitoring system, rather than querying a relational database.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;There are several companies like application monitoring or APM companies like New Relic, DataDog that have products to aggregate application metrics using SDKs or agents. However, what they will not collect are the business specific metrics that only your application cares about.&lt;/p&gt;
+&lt;p&gt;In order to create a list of relevant metrics for an application, its architects will need to determine a signal for its every key function. The hallmark of a microservice is that it does &lt;em&gt;one thing well&lt;/em&gt;, therefore it shouldn’t have many key functions. Start by white-boarding the functions implemented in the code and creating a list of metrics that would help you gauge its performance (or its availability at the least).&lt;/p&gt;
+&lt;p&gt;Most measurements you’ll do will fall under one of these categories:&lt;/p&gt;
+&lt;h4 id=&quot;counter&quot;&gt;Counter &lt;a class=&quot;direct-link&quot; href=&quot;#counter&quot;&gt;#&lt;/a&gt;&lt;/h4&gt;
+&lt;p&gt;As the name suggests, this value is incremented when a function runs. Example: total requests served&lt;/p&gt;
+&lt;h4 id=&quot;histogram&quot;&gt;&lt;a href=&quot;craftdocs://open?blockId=969CA66C-2955-405E-874A-E23D5F98AA26&amp;amp;spaceId=9d54cc03-adfe-f72f-3389-565eb7356d1d&quot;&gt;Histogram&lt;/a&gt; &lt;a class=&quot;direct-link&quot; href=&quot;#histogram&quot;&gt;#&lt;/a&gt;&lt;/h4&gt;
+&lt;p&gt;Histograms are charts that show the frequency of the occurrence of several ranges of values. A histogram samples observations (usually things like request durations or response sizes) and counts them in configurable buckets.&lt;/p&gt;
+&lt;h4 id=&quot;gauge&quot;&gt;Gauge &lt;a class=&quot;direct-link&quot; href=&quot;#gauge&quot;&gt;#&lt;/a&gt;&lt;/h4&gt;
+&lt;p&gt;This type is metric tracks a value that increases or decreases over a period. Example: number of threads.&lt;/p&gt;
+&lt;hr&gt;
+&lt;p&gt;With that background, let’s go through the list of common custom metrics developers use.&lt;/p&gt;
+&lt;h3 id=&quot;network-activity&quot;&gt;Network activity &lt;a class=&quot;direct-link&quot; href=&quot;#network-activity&quot;&gt;#&lt;/a&gt;&lt;/h3&gt;
+&lt;p&gt;These are the obvious metrics to track for any application that serves traffic. Network metrics tell you how much load is placed on the system. Over the time, these data points assist you when devising the scaling strategy for the system.&lt;/p&gt;
+&lt;p&gt;Things you should include are:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Request count by API type or page&lt;/li&gt;
+&lt;li&gt;Requests total&lt;/li&gt;
+&lt;li&gt;Transactions&lt;/li&gt;
+&lt;li&gt;Concurrent, expired, and rejected sessions&lt;/li&gt;
+&lt;li&gt;A watermark that records maximum concurrent sessions&lt;/li&gt;
+&lt;li&gt;Average processing time&lt;/li&gt;
+&lt;li&gt;A count by error type&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&quot;resource-usage&quot;&gt;Resource usage &lt;a class=&quot;direct-link&quot; href=&quot;#resource-usage&quot;&gt;#&lt;/a&gt;&lt;/h3&gt;
+&lt;p&gt;It is a best practice to monitor a systems &lt;em&gt;saturation&lt;/em&gt;, which is a measure of your systems resource consumption. Every resource has a &lt;em&gt;breaking point&lt;/em&gt;, beyond which additional stress causes performance degradation. Scalable and reliable systems are designed to never breach the breaking point.&lt;/p&gt;
+&lt;p&gt;However, simply collecting overall resource saturation at an application level is insufficient. You also need to look deeper at thread or resource pool level.&lt;/p&gt;
+&lt;p&gt;Consider collecting these metrics:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Number of processors, system CPU load, process CPU load, available memory, used memory, available swap, used swap, open file descriptor count.&lt;/li&gt;
+&lt;li&gt;Total resources consumed by connection pools, thread pools, and any other resource pools.&lt;/li&gt;
+&lt;li&gt;Total started thread count, current thread count, current busy threads, keep alive count, poller thread count, and connection count.&lt;/li&gt;
+&lt;li&gt;Objects created, destroyed, and checked out, high-water mark, number of times checked out,&lt;/li&gt;
+&lt;li&gt;Number of threads blocked waiting for a resource, number of times a thread has blocked waiting&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Common frameworks like Tomcat, Flask, etc. support exporting pre-defined metrics. For example, JMX already exposes a bunch of these metrics. See &lt;a href=&quot;https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/ContainerInsights-Prometheus-Sample-Workloads-javajmx.html&quot;&gt;AWS CloudWatch documentation&lt;/a&gt;.&lt;/p&gt;
+&lt;h3 id=&quot;users&quot;&gt;Users &lt;a class=&quot;direct-link&quot; href=&quot;#users&quot;&gt;#&lt;/a&gt;&lt;/h3&gt;
+&lt;p&gt;Besides, serving the intended audience, bots or scripts flood internet facing web servers with requests. These automated requests can overload the system if unauthenticated requests are improperly handled (for example, not redirecting all unauthenticated requests to the authentication service and attempting to process an unauthenticated request).&lt;/p&gt;
+&lt;p&gt;Here are user related metrics to collect:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Authenticated and unauthenticated requests&lt;/li&gt;
+&lt;li&gt;Demographics, authenticated and unauthenticated requests, usage patterns,&lt;/li&gt;
+&lt;li&gt;Unsuccessful login attempts&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Some of these metrics may also come from your Load Balancer or ingress.&lt;/p&gt;
+&lt;h3 id=&quot;business-transaction-(for-each-type)&quot;&gt;Business transaction (for each type) &lt;a class=&quot;direct-link&quot; href=&quot;#business-transaction-(for-each-type)&quot;&gt;#&lt;/a&gt;&lt;/h3&gt;
+&lt;p&gt;If your application follows the microservices approach, then the code fulfills one function, at least that’s the idea. What are the key performance indicators for your app’s function? Define them and track these metrics.&lt;/p&gt;
+&lt;p&gt;Should future releases cause performance regression, you’ll be able to detect it. Tracking these business metrics will help you track trends easily and avoid a cascading failure.&lt;/p&gt;
+&lt;p&gt;Here are common things that services care about:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Orders, messages, requests, transactions processed&lt;/li&gt;
+&lt;li&gt;Success and failure rates. For a retailer, this could be the conversion rate.&lt;/li&gt;
+&lt;li&gt;Service level agreements (like average transaction response time)&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;If you still need help with identifying key metrics, ask yourself this question: In what ways can my application negatively affect the business even when it might appear to be healthy?&lt;/p&gt;
+&lt;h3 id=&quot;database-connections&quot;&gt;Database connections &lt;a class=&quot;direct-link&quot; href=&quot;#database-connections&quot;&gt;#&lt;/a&gt;&lt;/h3&gt;
+&lt;p&gt;Along with monitoring your database instances using database monitoring tools, consider collecting database connection health metrics in your application. This is especially helpful if your application uses a shared database. If your application encounters database connection errors but the database remains operational for other application, you know the problem is on the application side, and not the database.&lt;/p&gt;
+&lt;p&gt;Consider recording these databases-related metrics:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;A count of &lt;code&gt;SQLException&lt;/code&gt; thrown&lt;/li&gt;
+&lt;li&gt;Number of (concurrent or maximum)queries&lt;/li&gt;
+&lt;li&gt;Average query run time&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&quot;data-consumption&quot;&gt;Data consumption &lt;a class=&quot;direct-link&quot; href=&quot;#data-consumption&quot;&gt;#&lt;/a&gt;&lt;/h3&gt;
+&lt;p&gt;Wherever you’re persisting data, you need to ensure that you’re going to go over your quotas and run out of space. Besides, monitoring on disk and in-memory data volumes, don’t forget to monitor the data your application stores in databases and caches.&lt;/p&gt;
+&lt;h3 id=&quot;cache-health&quot;&gt;Cache health &lt;a class=&quot;direct-link&quot; href=&quot;#cache-health&quot;&gt;#&lt;/a&gt;&lt;/h3&gt;
+&lt;p&gt;Speaking of cache, it is a best practice to monitor these metrics:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Items in cache&lt;/li&gt;
+&lt;li&gt;Get and set latency&lt;/li&gt;
+&lt;li&gt;Hits and miss rates&lt;/li&gt;
+&lt;li&gt;Items flushed&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Also, consider using an external cache such as Redis or Memcached.&lt;/p&gt;
+&lt;h3 id=&quot;external-services&quot;&gt;External services &lt;a class=&quot;direct-link&quot; href=&quot;#external-services&quot;&gt;#&lt;/a&gt;&lt;/h3&gt;
+&lt;p&gt;Keeping a track of how downstream services perform is also useful in understanding issues. Along with using timeouts, retries (preferably with &lt;a href=&quot;https://en.wikipedia.org/wiki/Exponential_backoff&quot;&gt;exponential backoff&lt;/a&gt;), and circuit breakers, consider monitoring these metrics for every external service your service&#39;s proper functioning depends on:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Circuit breaker status&lt;/li&gt;
+&lt;li&gt;Count of timeouts, requests&lt;/li&gt;
+&lt;li&gt;Average response time or latency&lt;/li&gt;
+&lt;li&gt;Responses by type&lt;/li&gt;
+&lt;li&gt;Network errors, protocol errors&lt;/li&gt;
+&lt;li&gt;Requests in flight&lt;/li&gt;
+&lt;li&gt;A high watermark of concurrent requests.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&quot;granularity-in-metrics-collection&quot;&gt;Granularity in metrics collection &lt;a class=&quot;direct-link&quot; href=&quot;#granularity-in-metrics-collection&quot;&gt;#&lt;/a&gt;&lt;/h3&gt;
+&lt;p&gt;The frequency at which you publish and collect metrics depends on your business requirements. For a retailer, knowing traffic patterns by the hour and day is useful in scaling capacity. Similarly, a travel company’s traffic pattern are influenced by holiday schedules.&lt;/p&gt;
+&lt;p&gt;Amazon EC2 provides instance metrics at 1-minute interval, which is a good start for critical metrics.&lt;/p&gt;
+&lt;p&gt;Remember that there’s a cost attached to exposing, collecting, and analyzing metrics. Collecting unnecessary information in metrics can put a strain on the system and slow down troubleshooting.&lt;/p&gt;
+&lt;p&gt;Consider giving the operator the control over the metrics your code should generate. This way, you can turn on specific metrics whenever needed.&lt;/p&gt;
+&lt;h2 id=&quot;conclusion&quot;&gt;Conclusion &lt;a class=&quot;direct-link&quot; href=&quot;#conclusion&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;Finding out which metrics to collect is an answer that only the most familiar with the code can answer. This post provides a list of metrics for you to get started.&lt;/p&gt;
+&lt;p&gt;Are there any metrics that I have overlooked? Let me know at &lt;a href=&quot;https://twitter.com/realz&quot;&gt;@realz&lt;/a&gt;.&lt;/p&gt;
+&lt;h2 id=&quot;references&quot;&gt;References &lt;a class=&quot;direct-link&quot; href=&quot;#references&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;&lt;a href=&quot;https://giedrius.blog/2019/05/11/push-vs-pull-in-monitoring-systems/&quot;&gt;Push Vs. Pull In Monitoring Systems – Giedrius Statkevičius&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href=&quot;https://www.splunk.com/en_us/blog/learn/sre-metrics-four-golden-signals-of-monitoring.html&quot;&gt;SRE Metrics: Four Golden Signals of Monitoring&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href=&quot;https://www.oreilly.com/library/view/learning-modern-linux/9781098108939/&quot;&gt;Learning Modern Linux&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href=&quot;https://www.oreilly.com/library/view/release-it/9781680500264/&quot;&gt;Release It!&lt;/a&gt;&lt;/p&gt;
+&lt;h2 id=&quot;appendix&quot;&gt;Appendix &lt;a class=&quot;direct-link&quot; href=&quot;#appendix&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;h3 id=&quot;instrumentation&quot;&gt;Instrumentation &lt;a class=&quot;direct-link&quot; href=&quot;#instrumentation&quot;&gt;#&lt;/a&gt;&lt;/h3&gt;
+&lt;p&gt;Instrumentation is the way to measure an application’s performance. It is highly useful in profiling and troubleshooting. There are two common strategies for instrumentation:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Auto instrumentation. This is generally done using a library like OpenTelemetry API and SDK. For more see “&lt;a href=&quot;https://www.honeycomb.io/blog/what-is-auto-instrumentation/&quot;&gt;What Is Auto-Instrumentation?&lt;/a&gt;”.&lt;/li&gt;
+&lt;li&gt;Custom instrumentation. Whenever your instrumentation needs are not met by auto instrumentation, you will also generate custom metrics.&lt;/li&gt;
+&lt;/ul&gt;
+
+			
+				
+				
+				&lt;img src=&quot;https://blog.realvarez.com/api/ga?v=1&amp;_v=j83&amp;t=pageview&amp;dr=https%3A%2F%2Frss-feed-reader.com&amp;_s=1&amp;dh=realvarez.com&amp;dp=%2Fposts%2Fobservability-custom-metrics%2F&amp;ul=en-us&amp;de=UTF-8&amp;dt=Close%20observability%20gaps%20with%20custom%20metrics&amp;tid=G-B5XRB3YVTR&quot; width=&quot;1&quot; height=&quot;1&quot; style=&quot;display:none&quot; alt=&quot;&quot;&gt;
+			
+		</content>
+	</entry>
+	
+	<entry>
+		<title>Weak References - A weapon against Out Of Memory Errors</title>
+		<link href="https://blog.realvarez.com/posts/weak-references/"/>
+		<updated>2022-05-27T17:00:00-07:00</updated>
+		<id>https://blog.realvarez.com/posts/weak-references/</id>
+		<content type="html">
+		  &lt;p&gt;One of the key features that containers offer us is the ability to apply resource control through &lt;a href=&quot;https://man7.org/linux/man-pages/man7/cgroups.7.html&quot;&gt;Control Groups&lt;/a&gt;, generally referred to as cgroups. Containers, which build on top of Linux cgroups, allow us to run process that have limited access to host&#39;s total capacity.&lt;/p&gt;
+&lt;p&gt;This ability allows us to co-locate containers on the same host without being concerned that a container may impact other containerized apps, the so called &lt;em&gt;noisy neighbor problem&lt;/em&gt;.&lt;/p&gt;
+&lt;p&gt;While cgroups allow us to control many resources, the most used controls are CPU and memory. For scalable, multi-tenant clusters like Kubernetes or Amazon ECS, resource limiting is a best practice.&lt;/p&gt;
+&lt;p&gt;ECS and Kubernetes allow us to limit resource consumption at container and ECS task or Kubernetes pod level. Below are the requests and limits a pod can have:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;spec.containers[].resources.limits.cpu&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;spec.containers[].resources.limits.memory&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;spec.containers[].resources.limits.hugepages-&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;spec.containers[].resources.requests.cpu&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;spec.containers[].resources.requests.memory&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;spec.containers[].resources.requests.hugepages-&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Similarly, Docker desktop allows configuring memory and CPU limits. Should a container try to use more memory than allocated, it gets &lt;em&gt;killed&lt;/em&gt;.&lt;/p&gt;
+&lt;pre class=&quot;language-python&quot;&gt;&lt;code class=&quot;language-python&quot;&gt;&lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;token number&quot;&gt;336546.736392&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;]&lt;/span&gt; Out of memory&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; Kill process &lt;span class=&quot;token number&quot;&gt;9218&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;java&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt; score &lt;span class=&quot;token number&quot;&gt;330&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;or&lt;/span&gt; sacrifice child&lt;br&gt;&lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;token number&quot;&gt;336546.738454&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;]&lt;/span&gt; Killed process &lt;span class=&quot;token number&quot;&gt;9218&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;java&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt; total&lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;vm&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;7543324kB&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; test&lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;mem&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;1060364kB&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; test&lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;mem2&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;0kB&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; test&lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;mem&lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;rar&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;0kB&lt;br&gt;&lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;token number&quot;&gt;336547.071919&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;]&lt;/span&gt; oom_reaper&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; reaped process &lt;span class=&quot;token number&quot;&gt;9218&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;java&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; now test&lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;mem&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;0kB&lt;/code&gt;&lt;/pre&gt;
+&lt;h2 id=&quot;memory-limits&quot;&gt;Memory Limits &lt;a class=&quot;direct-link&quot; href=&quot;#memory-limits&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;Many enterprises are in the process of moving legacy applications to containers clusters. Some of these applications ran on dedicated hardware. Their business requirements didn’t include operating with resource constraints.&lt;/p&gt;
+&lt;p&gt;Having dedicated resources meant that traditional applications were free to consume as much system resources as available. Although Java allows us to control the heap size, it is rarely used to restrict memory usage for production applications.&lt;/p&gt;
+&lt;p&gt;When these applications migrate to containers and a limit is put upon their memory consumption, new out of memory errors may emerge. A common remedy is to allocate more memory until the application stops crashing.&lt;/p&gt;
+&lt;p&gt;In many cases, that might be the best solution. Pay a bit more of RAM, and move on. Code rot makes changes expensive with each passing day. But if you do have the resources to refactor code, optimizing memory consumption will improve the reliability of your applications.&lt;/p&gt;
+&lt;h2 id=&quot;%F0%9F%A7%B9-garbage-collection&quot;&gt;🧹 Garbage Collection &lt;a class=&quot;direct-link&quot; href=&quot;#%F0%9F%A7%B9-garbage-collection&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;One question we may want to ask ourselves is: What are some of the common ways of using memory inefficiently? Once you’ve fixed all the memory leaks, what’s next?&lt;/p&gt;
+&lt;p&gt;C programmers had to manage memory manually using malloc() and free(). Thankfully, higher-level languages automatically allocate memory when programs create objects and free memory when the object is not required.&lt;/p&gt;
+&lt;p&gt;When a process creates a new object, the system will allocate it memory and return the pointer to the program. Typically, a program’s variables (or objects) will remain in memory as long as the code is running. In programming languages like Python, objects include a reference count field, which counts how many objects are referencing it. JavaScript object has a reference to its prototype (implicit reference) and to its properties values (explicit reference). As long as an object has a non-zero reference, it’s immune to garbage collection.&lt;/p&gt;
+&lt;p&gt;Once the process terminates, the garbage controller is free to remove the associated objects from memory as they don’t have any references. Objects created like these have a strong reference, which is the default behavior in all programming languages. They remain in memory until the process terminates.&lt;/p&gt;
+&lt;h3 id=&quot;%F0%9F%91%89%F0%9F%8F%BC-weak-referencing&quot;&gt;👉🏼 Weak Referencing &lt;a class=&quot;direct-link&quot; href=&quot;#%F0%9F%91%89%F0%9F%8F%BC-weak-referencing&quot;&gt;#&lt;/a&gt;&lt;/h3&gt;
+&lt;p&gt;One way to reduce memory consumption is by decreasing the amount and size of the objects stored in memory.&lt;/p&gt;
+&lt;p&gt;Many languages also support creating objects with weak reference. Garbage collectors can remove any variable stored with weak reference even while the process that created it is still running. This provides an excellent way to store objects in memory that can be safely removed if the system comes under memory pressure.&lt;/p&gt;
+&lt;p&gt;Weak Reference objects allow applications to safely build caches without risking running out of memory.&lt;/p&gt;
+&lt;h3 id=&quot;%F0%9F%8F%81-downsides-of-weak-referencing&quot;&gt;🏁 Downsides of weak referencing &lt;a class=&quot;direct-link&quot; href=&quot;#%F0%9F%8F%81-downsides-of-weak-referencing&quot;&gt;#&lt;/a&gt;&lt;/h3&gt;
+&lt;p&gt;Weak referencing forms the foundation for caching. And, similar to caching, it requires &lt;em&gt;getting and setting&lt;/em&gt; a variable before usage. So, checking a variable if it exists before reading or writing to it is necessary for weak references.&lt;/p&gt;
+&lt;p&gt;Can you imaging what would happen if a process tries to read its variable that’s stored as a weak reference, and the garbage controller has deleted it? Nothing good.&lt;/p&gt;
+&lt;h3 id=&quot;%F0%9F%8E%9A-different-levels-of-weak-references&quot;&gt;🎚 Different levels of weak references &lt;a class=&quot;direct-link&quot; href=&quot;#%F0%9F%8E%9A-different-levels-of-weak-references&quot;&gt;#&lt;/a&gt;&lt;/h3&gt;
+&lt;p&gt;In addition to the weak references described above, languages like Java provide &lt;em&gt;Soft References&lt;/em&gt; and &lt;em&gt;Phantom References.&lt;/em&gt; Here&#39;s an &lt;a href=&quot;https://dzone.com/articles/weak-soft-and-phantom-references-in-java-and-why-they-matter&quot;&gt;article&lt;/a&gt; that goes over the differences. The TLDR is that the garbage collector removes weak references first, then soft references, and finally phantom references.&lt;/p&gt;
+&lt;p&gt;If your language provides different levels of weak references, consider choosing one that suits your application&#39;s requirements.&lt;/p&gt;
+&lt;h3 id=&quot;%F0%9F%AB%B1%F0%9F%8F%BD%E2%80%8D%F0%9F%AB%B2%F0%9F%8F%BC-external-caching&quot;&gt;🫱🏽‍🫲🏼 External caching &lt;a class=&quot;direct-link&quot; href=&quot;#%F0%9F%AB%B1%F0%9F%8F%BD%E2%80%8D%F0%9F%AB%B2%F0%9F%8F%BC-external-caching&quot;&gt;#&lt;/a&gt;&lt;/h3&gt;
+&lt;p&gt;If your application runs multiple replicas or if multiple processes are caching similar data, consider using Redis or Memcached as an external, distributed, and shared cache. These caching solutions are excellent for web services as they allow multiple replicas to share a cache, which allow us to store user’s sessions state without requiring sticky sessions.&lt;/p&gt;
+&lt;h2 id=&quot;%F0%9F%8F%86-bonus-tip&quot;&gt;🏆 Bonus tip &lt;a class=&quot;direct-link&quot; href=&quot;#%F0%9F%8F%86-bonus-tip&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;Another common cause for OOM errors in web applications is not keeping the payload size minimal. Web servers stores data for every session in memory until the session terminates. When a client requests a large payload, and the server doesn’t limit it, the systems stores the payload in memory before it is sent to the client.&lt;/p&gt;
+&lt;p&gt;We can limit the payload size by restricting the maximum amount of data sent to a particular client. For example, you can paginate results from a database instead of sending the entire dataset to the client.&lt;/p&gt;
+&lt;h2 id=&quot;references&quot;&gt;References &lt;a class=&quot;direct-link&quot; href=&quot;#references&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;&lt;a href=&quot;https://docs.python.org/3/library/weakref.html&quot;&gt;weakref — Weak references — Python 3.10.4 documentation&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href=&quot;https://indradhanush.github.io/blog/life-of-a-container/&quot;&gt;Life of a Container&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href=&quot;https://developer.mozilla.org/en-US/docs/Web/JavaScript/Memory_Management&quot;&gt;Memory Management - JavaScript | MDN&lt;/a&gt;&lt;/p&gt;
+
+			
+				
+				
+				&lt;img src=&quot;https://blog.realvarez.com/api/ga?v=1&amp;_v=j83&amp;t=pageview&amp;dr=https%3A%2F%2Frss-feed-reader.com&amp;_s=1&amp;dh=realvarez.com&amp;dp=%2Fposts%2Fweak-references%2F&amp;ul=en-us&amp;de=UTF-8&amp;dt=Weak%20References%20-%20A%20weapon%20against%20Out%20Of%20Memory%20Errors&amp;tid=G-B5XRB3YVTR&quot; width=&quot;1&quot; height=&quot;1&quot; style=&quot;display:none&quot; alt=&quot;&quot;&gt;
+			
+		</content>
+	</entry>
+	
+	<entry>
+		<title>How is eBPF efficient for observability</title>
+		<link href="https://blog.realvarez.com/posts/ebpf-speed-explained/"/>
+		<updated>2022-07-08T17:00:00-07:00</updated>
+		<id>https://blog.realvarez.com/posts/ebpf-speed-explained/</id>
+		<content type="html">
+		  &lt;blockquote&gt;
+&lt;p&gt;Everybody says eBPF is fast, but how?&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;The Berkeley Packet Filter (BPF or eBPF) is a virtual machine based on registers, initially designed for filtering network packets, best known for its use in &lt;code&gt;tcpdump&lt;/code&gt;. In this post, we learn what is exactly that makes BPF so appealing for a number of use cases.&lt;/p&gt;
+&lt;h2 id=&quot;introduction&quot;&gt;Introduction &lt;a class=&quot;direct-link&quot; href=&quot;#introduction&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;BPF programs are small programs that run in the Linux kernel when events occur. You can think of BPF programs as event driven functions (like AWS Lambda).  BPF has access to a subset of kernel functions and memory. It is designed to be safe, that is poor BPF code won’t crash your kernel.&lt;/p&gt;
+&lt;p&gt;In the containers world, BPF is increasingly becoming relevant. Its most popular use case is Cilium, which uses eBPF to provide a &lt;a href=&quot;https://cilium.io/blog/2021/12/01/cilium-service-mesh-beta&quot;&gt;“sidecarless” service mesh&lt;/a&gt; and &lt;a href=&quot;https://github.com/pixie-io/pixie&quot;&gt;Pixie&lt;/a&gt;, which uses eBPF to collect telemetry data.&lt;/p&gt;
+&lt;p&gt;Other popular BPF uses are:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Debugging and Tracing -&lt;/strong&gt; trace any &lt;code&gt;syscall&lt;/code&gt; or kernel function or any user space program.
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/iovisor/bpftrace&quot;&gt;bpftrace&lt;/a&gt; allows users to trace from the Linux command line.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Networking -&lt;/strong&gt; Inspect, filter, manipulate traffic.
+&lt;ul&gt;
+&lt;li&gt;User space program can attach a filter to any socket and inspect the traffic flowing through it. They can also allow, disallow, redirect packets.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Security monitoring and sandboxing&lt;/strong&gt;
+&lt;ul&gt;
+&lt;li&gt;BPF programs can detect and report the &lt;code&gt;syscalls&lt;/code&gt; occurring on a system.&lt;/li&gt;
+&lt;li&gt;BPF programs can prevent applications from performing certain &lt;code&gt;syscalls&lt;/code&gt; on a system (e.g., prevent deleting a file).&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Linux has allowed us to perform above functions for decades, but BPF helps us perform these tasks more efficiently. BPF programs use fewer CPU and memory resources than traditional solutions.&lt;/p&gt;
+&lt;h2 id=&quot;how-is-bpf-faster%3F&quot;&gt;How is BPF faster? &lt;a class=&quot;direct-link&quot; href=&quot;#how-is-bpf-faster%3F&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;BPF programs are faster because BPF code runs in kernel space.&lt;/p&gt;
+&lt;p&gt;Consider the steps a program has to take to calculate the number of bytes sent out on a Linux system. First, the kernel generates raw data as network activity occurs. This raw data packs a ton of information, most of which is irrelevant for calculating &lt;em&gt;bytes out&lt;/em&gt; metrics. So, whatever is generating aggregated metrics will have to  filter the relevant data points repeatedly and run mathematical calculations on them. This process is repeated hundreds of times (or more) every minute.&lt;/p&gt;
+&lt;p&gt;Since traditional monitoring programs run in user space, all that raw data that the kernel generates has to be copied from kernel space into user space. This data copy and filtering operation can be very taxing on the CPU. This is why ptrace is slow (whereas &lt;a href=&quot;https://github.com/iovisor/bpftrace&quot;&gt;&lt;code&gt;bpftrace&lt;/code&gt;&lt;/a&gt; is not).&lt;/p&gt;
+&lt;p&gt;eBPF avoids this copying of data from kernel space to user space. You can run a program in kernel space to aggregate the data you need and send just the output to user space.&lt;/p&gt;
+&lt;p&gt;Before BPF, large amounts of raw data from the kernel had to be copied over to user space for analysis. BPF allows creating histograms and filtering data within the kernel, which is much faster than exchanging massive amounts of data between user and kernel space.&lt;/p&gt;
+&lt;h2 id=&quot;bpf-maps&quot;&gt;BPF Maps &lt;a class=&quot;direct-link&quot; href=&quot;#bpf-maps&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;BPF uses &lt;strong&gt;BPF maps&lt;/strong&gt; to allow bidirectional data exchange between user and kernel space. In Linux, maps are a generic storage type for sharing data between user and kernel space. They are key value stores that reside in the kernel.&lt;/p&gt;
+&lt;p&gt;For metrics generation, BPF programs run calculations in kernel space and write results to BPF maps that a userspace  application can read (and also write to).&lt;/p&gt;
+&lt;hr&gt;
+&lt;p&gt;Now you know why eBPF is efficient. It’s because BPF provides a way to run programs in kernel space and avoid copying irrelevant data between kernel and userspace.&lt;/p&gt;
+&lt;h2 id=&quot;references&quot;&gt;References &lt;a class=&quot;direct-link&quot; href=&quot;#references&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;&lt;a href=&quot;https://thenewstack.io/how-ebpf-streamlines-the-service-mesh&quot;&gt;How eBPF Streamlines the Service Mesh&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href=&quot;https://buoyant.io/2022/06/07/ebpf-sidecars-and-the-future-of-the-service-mesh/&quot;&gt;eBPF, sidecars, and the future of the service mesh&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href=&quot;https://av.tib.eu/media/44349&quot;&gt;TIB AV-Portal&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href=&quot;https://www.amazon.com/Linux-Observability-BPF-Programming-Performance/dp/1492050202&quot;&gt;Linux Observability with BPF: Advanced Programming for Performance Analysis and Networking&lt;/a&gt;&lt;/p&gt;
+&lt;hr&gt;
+&lt;h2 id=&quot;appendix&quot;&gt;Appendix &lt;a class=&quot;direct-link&quot; href=&quot;#appendix&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;Containers use Linux Namespaces, a feature of the Linux kernel that partitions kernel resources such that one set of processes sees one set of resources while another set of processes sees a different set of resources.&lt;/p&gt;
+&lt;p&gt;Under the hood, containers use &lt;code&gt;iptables&lt;/code&gt; to network. Linux developers didn’t intend to run thousands of &lt;code&gt;iptables&lt;/code&gt; rules on every node. To overcome the performance limitations in &lt;code&gt;iptables&lt;/code&gt;, kernel devs are replacing &lt;a href=&quot;https://cilium.io/blog/2018/04/17/why-is-the-kernel-community-replacing-iptables&quot;&gt;&lt;code&gt;iptables&lt;/code&gt; with BPF&lt;/a&gt;.&lt;/p&gt;
+&lt;h2 id=&quot;bpf-verifier&quot;&gt;BPF Verifier &lt;a class=&quot;direct-link&quot; href=&quot;#bpf-verifier&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;BPF allows anyone to run code in kernel space without being a kernel dev, compiling your own kernel, or writing custom kernel extensions that can hugely reduce the stability of the kernel.&lt;/p&gt;
+&lt;p&gt;BPF programs are safe. The &lt;strong&gt;BPF Verifier&lt;/strong&gt; ensures code is safe to run in kernel.   ← &lt;strong&gt;Explain this&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;Linux kernel includes a JIT compiler for BPF instructions. Once verification completes, JIT transforms bytecode to machine code.&lt;/p&gt;
+&lt;h2 id=&quot;bpf-programs&quot;&gt;BPF programs &lt;a class=&quot;direct-link&quot; href=&quot;#bpf-programs&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;Written in a subset of C. LLVM compiles BPF programs into bytecode.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;BPF tracepoints&lt;/strong&gt; are static marks in the kernel’s codebase that allow you to inject any code for tracing and debugging.&lt;/p&gt;
+&lt;h2 id=&quot;ebpf-and-mtls&quot;&gt;eBPF and mTLS &lt;a class=&quot;direct-link&quot; href=&quot;#ebpf-and-mtls&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;eBPF cannot do mTLS because it operates in kernel space entirely.&lt;/p&gt;
+&lt;p&gt;Proxy mTLS is handled by the sidecar, which runs in the user space.&lt;/p&gt;
+&lt;h2 id=&quot;tcpdump-and-seccomp&quot;&gt;tcpdump and Seccomp &lt;a class=&quot;direct-link&quot; href=&quot;#tcpdump-and-seccomp&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;Generate BPF bytecode.&lt;/p&gt;
+&lt;p&gt;tcpdump is frontend to &lt;code&gt;libpcap&lt;/code&gt;. It reads packets from the NIC and writes to a file. PCAP filter on Linux are compiled to BPF programs. When you use &lt;code&gt;tcpdump&lt;/code&gt; , you compile and load a BPF program to filter packets.&lt;/p&gt;
+&lt;h2 id=&quot;kubectl-trace&quot;&gt;kubectl trace &lt;a class=&quot;direct-link&quot; href=&quot;#kubectl-trace&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;&lt;a href=&quot;craftdocs://open?blockId=245EFFA2-BA97-4186-932A-F96888BF9F32&amp;amp;spaceId=9d54cc03-adfe-f72f-3389-565eb7356d1d&quot;&gt;&lt;strong&gt;kubectl-trace&lt;/strong&gt;&lt;/a&gt;&lt;/p&gt;
+
+			
+				
+				
+				&lt;img src=&quot;https://blog.realvarez.com/api/ga?v=1&amp;_v=j83&amp;t=pageview&amp;dr=https%3A%2F%2Frss-feed-reader.com&amp;_s=1&amp;dh=realvarez.com&amp;dp=%2Fposts%2Febpf-speed-explained%2F&amp;ul=en-us&amp;de=UTF-8&amp;dt=How%20is%20eBPF%20efficient%20for%20observability&amp;tid=G-B5XRB3YVTR&quot; width=&quot;1&quot; height=&quot;1&quot; style=&quot;display:none&quot; alt=&quot;&quot;&gt;
+			
+		</content>
+	</entry>
+	
+	<entry>
+		<title>Handling Feedback</title>
+		<link href="https://blog.realvarez.com/posts/handling-feedback/"/>
+		<updated>2022-10-08T17:00:00-07:00</updated>
+		<id>https://blog.realvarez.com/posts/handling-feedback/</id>
+		<content type="html">
+		  &lt;p&gt;Accepting feedback with grace plays a key role in building long lasting productive relationships. Humans are social creatures and feedback fuels our psyche. We nod when we see our colleagues in the hallway. Sometimes multiple times a day. We wave to our neighbors we rarely know, and we seek recognition from those we look up to.&lt;/p&gt;
+&lt;p&gt;While positive feedback is invigorating, negative feedback about something we care deeply about can hinder our creativity. Especially when negative feedback carries hints of criticism and personal attacks.&lt;/p&gt;
+&lt;p&gt;I have been in so many situations where leaders crush inventiveness with their &lt;em&gt;brutally honest&lt;/em&gt; facts. These leaders think they are providing feedback, but they end up shaming attempts at innovation. Although inadvertent, their methods focus on individual rather than the product they are supposed to be improving.&lt;/p&gt;
+&lt;p&gt;A survey by &lt;a href=&quot;https://www.talentinnovation.org/&quot;&gt;the Center of Talent Innovation&lt;/a&gt; found that when undermining management causes burnouts. This leadership style fosters an environment that becomes hostile to failure, and therefore, innovation.&lt;/p&gt;
+&lt;p&gt;Collaborative creativity thrives in &lt;em&gt;psychologically safe&lt;/em&gt; environments. When people believe others will not penalize them or think less of them for mistakes, they are more likely to take chances and think outside of the box. Isn’t that what management asks us all to do?&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://res.craft.do/user/full/9d54cc03-adfe-f72f-3389-565eb7356d1d/doc/85595440-9377-4C01-B155-23C96FE4B91B/DB390C2D-FEE3-42F8-928D-96FEA52E0FA4_2/FGxQcbVgE38Dm7OknbK4Krt5tw9Ym1Z3b9J2aGRpcQoz/Image.png&quot; alt=&quot;Image.png&quot;&gt;&lt;/p&gt;
+&lt;p&gt;Harvard Business School professor Amy Edmondson in &lt;a href=&quot;https://web.mit.edu/curhan/www/docs/Articles/15341_Readings/Group_Performance/Edmondson%20Psychological%20safety.pdf&quot;&gt;Psychological Safety and Learning Behavior in Work Teams&lt;/a&gt; writes:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Team psychological safety should facilitate learning behavior in work teams because it eases excessive concern about others’ reactions to actions that have the potential for embarrassment or threat, which learning behaviors often have. For example, team members may be unwilling to bring up errors that could help the team make subsequent changes because they are concerned about being seen as incompetent, which allows them to ignore or discount the negative consequences of their silence for team performance. In contrast, if they respect and feel respected by other team members and feel confident that team members will not hold the error against them, the benefits of speaking up are likely to be given more weight.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;Negative criticism may be discouraging, whether you&#39;re getting it for a creative project or at a performance review. Many of us can recall at least one occasion when we were told that we were not good enough. Brene Brown refers to these moments as &lt;em&gt;creativity scars.&lt;/em&gt; Brown learned that  85% people had a school incident in their childhood that was so shaming, it changed their perception about themselves.&lt;/p&gt;
+&lt;p&gt;It remains an unfortunate fact that creativity, despite its inherent challenges, has to survive in environments designed to crush it. Pianists, singer, actors, or software developers, we all fight against the failure and self-doubt, not only in themselves but also in others. Open any business book and you’ll hear story after story of interpersonal conflicts and team dynamics stifling innovation.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://res.craft.do/user/full/9d54cc03-adfe-f72f-3389-565eb7356d1d/doc/85595440-9377-4C01-B155-23C96FE4B91B/29954455-96B5-4109-9D48-C7F80A2FB741_2/7M1InpeGb4ctAfTV1fWfObn8IwAuUSnOsfyWPR1gha0z/Image.tiff&quot; alt=&quot;Image.tiff&quot;&gt;&lt;/p&gt;
+&lt;p&gt;Negative feedback is everyone’s reality. I am staunch believer that &lt;em&gt;mastery requires feedback&lt;/em&gt;. Maturity is in understanding that everyone fails. Failure is in remaining knocked down. Getting back into the game, and learning from your mistakes, is the way to fight failure. Even superstars are not immune to failure and criticism.&lt;/p&gt;
+&lt;p&gt;One way to reduce negative feedback is by selecting the “right people”. This is an unreasonable expectation in professional environments. Or in &lt;em&gt;any&lt;/em&gt; environment. I am not suggesting that you should care about everyone’s opinion. However, listening to a limited set of people can lead you in the wrong direction or groupthink. I am a proponent of diversity, and that includes seeking feedback from folks across the spectrum.&lt;/p&gt;
+&lt;h3 id=&quot;maintaining-growth-mindset&quot;&gt;&lt;strong&gt;Maintaining growth mindset&lt;/strong&gt; &lt;a class=&quot;direct-link&quot; href=&quot;#maintaining-growth-mindset&quot;&gt;#&lt;/a&gt;&lt;/h3&gt;
+&lt;p&gt;I have learned that most feedback recipients need to carry a sieve to sift through the message. Surely there will be times when you’ll find nothing worthy to keep. But assuming you are asking the people that truly care about improving your contributions, there will be nuggets of good ideas to help you improve.&lt;/p&gt;
+&lt;p&gt;When receiving negative (or poorly presented) feedback, you have two options. First is to simply ignore it, which might be great if you are an unconventional genius like Dostoevsky or Lady Gaga. The other option is to validate the feedback and seek things that can polish your work. I deal with the second situation. Most of the time.&lt;/p&gt;
+&lt;p&gt;The worst you can do in these cases is to focus on the hurtful comments. Instead, listen. Be prepared to accept the feedback. Becoming defensive will hinder your ability to understand diverse viewpoints.&lt;/p&gt;
+&lt;p&gt;Remain gracious as being thankful can disarm people intending to hurt you. Thank people for their time and effort. Don’t sound flippant or use sarcasm to shield yourself. Use this opportunity to learn. Don’t damage your relationships.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Brown writes &lt;em&gt;“don’t grab hurtful comments and pull them close to you by rereading them and ruminating on them. Don’t play with them by rehearsing your badass comeback. And whatever you do, don’t pull hatefulness close to your heart.”&lt;/em&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;When I recently faced hurtful feedback, I asked myself why does it sting. I carried elaborate chats with my opponent in my head. At first, I tried very hard to prove them wrong. Then I tried to disqualify their arguments. Then I discredited them. “What do they know?”&lt;/p&gt;
+&lt;p&gt;They had hurt me with their comments. I allowed myself to wallow. I tried to put my feelings into words. In retrospective, the best thing I did was to avoid belittling myself, which I knew would’ve been a giant waste of time. I realized that the feedback was hard to process because it attacked my vulnerabilities. It had questioned my credibility.&lt;/p&gt;
+&lt;p&gt;Many of us carry self-doubt deep within ourselves. There’s a strong link that connects our insecurities and the things that are important to us. We are worried that we’re not as competent or informed as we (or others) think we are. We live in a perpetual state of &lt;a href=&quot;https://www.google.com/search?client=safari&amp;amp;rls=en&amp;amp;q=imposter+syndrome&amp;amp;ie=UTF-8&amp;amp;oe=UTF-8&quot;&gt;&lt;em&gt;imposter syndrome&lt;/em&gt;&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;For reassurance, I remembered my past accomplishments. Practiced a bit of self-compassion. I couldn’t let an opinion define who I was. I had to isolate the feedback and the feelings it had brought to surface, and continue with my productive journey onward.&lt;/p&gt;
+&lt;p&gt;The feedback provider had evoked my insecurities. The negative feelings triggered my defense mechanism setting my brain into flight or fight mode. In defensive mode, I was spending more energy fighting the feedback, berating myself, and feeling inadequate than using the feedback to improve my output. My fears made me think that the person saw my &lt;em&gt;authentic&lt;/em&gt; version, the one that’s a total failure.&lt;/p&gt;
+&lt;p&gt;It took me a couple of days to &lt;em&gt;calm down&lt;/em&gt;. It couldn’t have been possible if I hadn’t processed my feelings and analyzed my thoughts. Ultimately, I did succeed in putting aside the negative stuff and focusing on the constructive feedback.&lt;/p&gt;
+&lt;p&gt;In this situation, I realized that the feedback did make sense, and if roles were switched, I would’ve made the same recommendations. Albeit in a more professional and positive way.&lt;/p&gt;
+&lt;h3 id=&quot;set-clear-boundaries&quot;&gt;&lt;strong&gt;Set clear boundaries&lt;/strong&gt; &lt;a class=&quot;direct-link&quot; href=&quot;#set-clear-boundaries&quot;&gt;#&lt;/a&gt;&lt;/h3&gt;
+&lt;p&gt;The incident definitely taught me that good feedback can sound outrageous at first (vice versa is also true). I am certainly not going to exclude people with tough feedback nor the ones that don’t know how to provide it. I am now more aware that my insecurities can make me stop listening and hinder my creativity.&lt;/p&gt;
+&lt;p&gt;In fact, I intend to go a step further and welcome negative feedback. Not because I am a glutton for punishment, but because I know people struggle to provide positive feedback.&lt;/p&gt;
+&lt;p&gt;When soliciting feedback, consider being specific and request feedback frequently. Doing so will give you inputs in more manageable portions.&lt;/p&gt;
+&lt;p&gt;The right way to provide feedback is to put the problem in focus and not personalities. I positive feedback session for me is where I don’t come across as lecturer. I try to identify strengths in teams and individuals, and instances where that strength has potential to grow. The requestor and provider have to remain respectful at all times. I know people will not accept my feedback if I shame or blame them.&lt;/p&gt;
+&lt;p&gt;When providing feedback, I need to choose my words wisely. The recipient is asking for help, not judgement. I can avoid sounding negative by first seeking permission to provide feedback and clearly defining the scope of feedback. By setting boundaries, I hope to ensure not stepping outside the scope of feedback I am being asked to provide. I cannot erode trust in relationships by sounding egoistic, self-righteous, and becoming an impediment to innovation.&lt;/p&gt;
+
+			
+				
+				
+				&lt;img src=&quot;https://blog.realvarez.com/api/ga?v=1&amp;_v=j83&amp;t=pageview&amp;dr=https%3A%2F%2Frss-feed-reader.com&amp;_s=1&amp;dh=realvarez.com&amp;dp=%2Fposts%2Fhandling-feedback%2F&amp;ul=en-us&amp;de=UTF-8&amp;dt=Handling%20Feedback&amp;tid=G-B5XRB3YVTR&quot; width=&quot;1&quot; height=&quot;1&quot; style=&quot;display:none&quot; alt=&quot;&quot;&gt;
+			
+		</content>
+	</entry>
+	
+	<entry>
+		<title>Using eStargz to reduce container startup time on Amazon EKS</title>
+		<link href="https://blog.realvarez.com/posts/estargz/"/>
+		<updated>2022-10-24T17:00:00-07:00</updated>
+		<id>https://blog.realvarez.com/posts/estargz/</id>
+		<content type="html">
+		  &lt;p&gt;A container image bundles executable code, library, and configuration. Images contain everything an application needs to run. It is a best practice to exclude any file that’s unnecessary for the application packaged in the image. A smaller image means that when you create a container, the container runtime (dockerd or containerd) will have to download fewer bits from the container registry, which will result in faster startup time.&lt;/p&gt;
+&lt;p&gt;There are cases when the container image becomes significantly large (&amp;gt;500 MB). A common scenario is machine learning workloads. ML workload containers usually package model data necessary for the application. The image size for these containers can easily span in to multiple GBs. As a result, these applications have a slower startup time when the runtime has to pull the image. In fact, &lt;a href=&quot;https://www.usenix.org/conference/fast16/technical-sessions/presentation/harter&quot;&gt;research&lt;/a&gt; shows that pulling packages accounts for 76% of container start time, but only 6.4% of that data is read.&lt;/p&gt;
+&lt;h2 id=&quot;lazy-pulling&quot;&gt;Lazy-pulling &lt;a class=&quot;direct-link&quot; href=&quot;#lazy-pulling&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;There are two open source projects designed to improve container startup time. &lt;a href=&quot;https://github.com/containerd/stargz-snapshotter&quot;&gt;Stargz&lt;/a&gt; and &lt;a href=&quot;https://github.com/awslabs/soci-snapshotter&quot;&gt;SOCI&lt;/a&gt; are containerd plugins that reduce the cold start time by providing a way to run containers without downloading the entire image. They introduce the concept of &lt;em&gt;lazy pulling&lt;/em&gt;, a technique that allows the runtime to download the bits from the container registry as needed.&lt;/p&gt;
+&lt;p&gt;Using lazy pulling significantly reduces the application startup time. eStargz is a lazily-pullable image format that is compatible with &lt;a href=&quot;https://github.com/opencontainers/runtime-spec&quot;&gt;OCI runtimes&lt;/a&gt; and standard container registries like DockerHub, GitHub Container Registry.&lt;/p&gt;
+&lt;h2 id=&quot;estargz&quot;&gt;eStargz &lt;a class=&quot;direct-link&quot; href=&quot;#estargz&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;The eStargz image format is based on stargz image format by Container Registry Filesystem (CRFS) open source project. &lt;strong&gt;CRFS&lt;/strong&gt; is a read-only FUSE filesystem that lets you mount a container image, served directly from a container registry, without pulling it all locally first. The project introduces &lt;strong&gt;S&lt;/strong&gt;eekable tar.gz format, which makes tar.gz files seekable using an index.&lt;/p&gt;
+&lt;h2 id=&quot;stargz-snapshotter-plugin&quot;&gt;Stargz Snapshotter plugin &lt;a class=&quot;direct-link&quot; href=&quot;#stargz-snapshotter-plugin&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;Stargz snapshotter is implemented as a &lt;a href=&quot;https://github.com/containerd/containerd/blob/04985039cede6aafbb7dfb3206c9c4d04e2f924d/PLUGINS.md#proxy-plugins&quot;&gt;proxy plugin&lt;/a&gt; daemon (&lt;code&gt;containerd-stargz-grpc&lt;/code&gt;) for containerd. When containerd starts a container, it queries the rootfs snapshots to stargz snapshotter daemon through a unix socket. This snapshotter remotely mounts queried eStargz layers from registries on the node and provides these mount points as remote snapshots to containerd. The plugin uses FUSE to mount eStargz layers directly from the container registry.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://res.craft.do/user/full/9d54cc03-adfe-f72f-3389-565eb7356d1d/doc/28146E5F-3F27-4D41-94B7-CF6EF7615505/C70CF5ED-93B1-43E2-B0C2-41D09499BBC8_2/kxUcYlMPhkl9lEW9PWLWDQpsZcldhni1S81OJseSGZgz/Image.tiff&quot; alt=&quot;Image.tiff&quot;&gt;&lt;/p&gt;
+&lt;h2 id=&quot;running-estargz-images-on-amazon-eks&quot;&gt;Running eStargz images on Amazon EKS &lt;a class=&quot;direct-link&quot; href=&quot;#running-estargz-images-on-amazon-eks&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;eStargz images are a little different from the images you’d build using &lt;code&gt;docker build&lt;/code&gt;. In order to create an image that supports lazy pulling, you&#39;ll need an eStargz-aware image builder or a converter.&lt;/p&gt;
+&lt;p&gt;I am going to build my eStargz image using nerdctl, which is an eStargz-aware image builder. Since image size is not an issue, I will use Debian Jessie as the base image to demo. To make the image size artificially large, I will include twenty 50 MB files.&lt;/p&gt;
+&lt;p&gt;Lets generate large files containing random text:&lt;/p&gt;
+&lt;pre class=&quot;language-python&quot;&gt;&lt;code class=&quot;language-python&quot;&gt;mkdir files&lt;br&gt;&lt;span class=&quot;token keyword&quot;&gt;for&lt;/span&gt; i &lt;span class=&quot;token keyword&quot;&gt;in&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;token number&quot;&gt;0.&lt;/span&gt;&lt;span class=&quot;token number&quot;&gt;.20&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt; do base64 &lt;span class=&quot;token operator&quot;&gt;/&lt;/span&gt;dev&lt;span class=&quot;token operator&quot;&gt;/&lt;/span&gt;urandom &lt;span class=&quot;token operator&quot;&gt;|&lt;/span&gt; head &lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;c &lt;span class=&quot;token number&quot;&gt;50000000&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;&gt;&lt;/span&gt; files&lt;span class=&quot;token operator&quot;&gt;/&lt;/span&gt;&lt;span class=&quot;token builtin&quot;&gt;file&lt;/span&gt;$&lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;i&lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;txt&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt; done&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Create a DockerFile:&lt;/p&gt;
+&lt;pre class=&quot;language-python&quot;&gt;&lt;code class=&quot;language-python&quot;&gt;cat &lt;span class=&quot;token operator&quot;&gt;&gt;&lt;/span&gt; Dockerfile &lt;span class=&quot;token operator&quot;&gt;&amp;lt;&amp;lt;&lt;/span&gt;EOF&lt;br&gt;FROM debian&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;jessie&lt;br&gt;RUN apt&lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;get update &lt;span class=&quot;token operator&quot;&gt;&amp;amp;&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;&amp;amp;&lt;/span&gt; apt&lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;get install &lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;y \&lt;br&gt;    vim&lt;br&gt;COPY files &lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;&lt;br&gt;&lt;br&gt;EOF&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;I am going to store my image in Amazon ECR. I’ll create an ECR repository:&lt;/p&gt;
+&lt;pre class=&quot;language-python&quot;&gt;&lt;code class=&quot;language-python&quot;&gt;ECR_URI&lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt;$&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;aws ecr create&lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;repository \&lt;br&gt;  &lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;repository&lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;name estargz&lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;demo \&lt;br&gt;  &lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;query &lt;span class=&quot;token string&quot;&gt;&#39;repository.repositoryUri&#39;&lt;/span&gt; \&lt;br&gt;  &lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;output text&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Use nerdctl to create container image:&lt;/p&gt;
+&lt;pre class=&quot;language-python&quot;&gt;&lt;code class=&quot;language-python&quot;&gt;sudo nerdctl build &lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;t $&lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;ECR_URI&lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;token number&quot;&gt;1&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The image is not in eStargz formatted right now, I’ll have to convert it:&lt;/p&gt;
+&lt;pre class=&quot;language-python&quot;&gt;&lt;code class=&quot;language-python&quot;&gt;nerdctl image convert &lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;estargz &lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;oci \&lt;br&gt;  $&lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;ECR_URI&lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;token number&quot;&gt;1&lt;/span&gt; $&lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;ECR_URI&lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;token number&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;esgz&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The resulting images:&lt;/p&gt;
+&lt;pre class=&quot;language-python&quot;&gt;&lt;code class=&quot;language-python&quot;&gt;nerdctl images&lt;br&gt;REPOSITORY                                                   TAG       IMAGE ID        CREATED           PLATFORM       SIZE       BLOB SIZE&lt;br&gt;account&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;dkr&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;ecr&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;us&lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;west&lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;token number&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;amazonaws&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;com&lt;span class=&quot;token operator&quot;&gt;/&lt;/span&gt;estargz&lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;demo    &lt;span class=&quot;token number&quot;&gt;1&lt;/span&gt;         798b85a131ed    &lt;span class=&quot;token number&quot;&gt;31&lt;/span&gt; minutes ago    linux&lt;span class=&quot;token operator&quot;&gt;/&lt;/span&gt;amd64    &lt;span class=&quot;token number&quot;&gt;1.2&lt;/span&gt; GiB    &lt;span class=&quot;token number&quot;&gt;828.8&lt;/span&gt; MiB&lt;br&gt;account&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;dkr&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;ecr&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;us&lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;west&lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;token number&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;amazonaws&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;com&lt;span class=&quot;token operator&quot;&gt;/&lt;/span&gt;estargz&lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;demo    &lt;span class=&quot;token number&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;esgz    81b0ffd2a4a3    &lt;span class=&quot;token number&quot;&gt;36&lt;/span&gt; seconds ago    linux&lt;span class=&quot;token operator&quot;&gt;/&lt;/span&gt;amd64    &lt;span class=&quot;token number&quot;&gt;0.0&lt;/span&gt; B      &lt;span class=&quot;token number&quot;&gt;832.3&lt;/span&gt; MiB&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Login to ECR and push the image to ECR:&lt;/p&gt;
+&lt;pre class=&quot;language-python&quot;&gt;&lt;code class=&quot;language-python&quot;&gt;aws ecr get&lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;login&lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;password &lt;span class=&quot;token operator&quot;&gt;|&lt;/span&gt; sudo nerdctl login \&lt;br&gt;   &lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;username AWS \&lt;br&gt;   &lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;password&lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;stdin \&lt;br&gt;   $ECR_URI&lt;br&gt;nerdctl push $&lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;ECR_URI&lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;token number&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;esgz&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The image is now available in ECR and I can start running it in my EKS cluster.&lt;/p&gt;
+&lt;h2 id=&quot;create-a-managed-node-group-that-uses-containerd&quot;&gt;Create a managed node group that uses containerd &lt;a class=&quot;direct-link&quot; href=&quot;#create-a-managed-node-group-that-uses-containerd&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;EKS nodes currently don’t enable containerd by default. I’ll create a node group that uses containerd.&lt;/p&gt;
+&lt;p&gt;Create environment variables for AWS Region and EKS cluster name:&lt;/p&gt;
+&lt;pre class=&quot;language-python&quot;&gt;&lt;code class=&quot;language-python&quot;&gt;AWS_REGION&lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;&amp;lt;&lt;/span&gt;Your AWS Region&lt;span class=&quot;token operator&quot;&gt;&gt;&lt;/span&gt;&lt;br&gt;CLUSTER_NAME&lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;&amp;lt;&lt;/span&gt;Your EKS cluster&#39;s name&lt;span class=&quot;token operator&quot;&gt;&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;First, I need to retrieve the id of the EKS optimized AMI in my region:&lt;/p&gt;
+&lt;pre class=&quot;language-python&quot;&gt;&lt;code class=&quot;language-python&quot;&gt;AMI_ID&lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt;$&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;aws ssm get&lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;parameter &lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;name &lt;span class=&quot;token operator&quot;&gt;/&lt;/span&gt;aws&lt;span class=&quot;token operator&quot;&gt;/&lt;/span&gt;service&lt;span class=&quot;token operator&quot;&gt;/&lt;/span&gt;eks&lt;span class=&quot;token operator&quot;&gt;/&lt;/span&gt;optimized&lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;ami&lt;span class=&quot;token operator&quot;&gt;/&lt;/span&gt;&lt;span class=&quot;token number&quot;&gt;1.23&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;/&lt;/span&gt;amazon&lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;linux&lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;token number&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;/&lt;/span&gt;recommended&lt;span class=&quot;token operator&quot;&gt;/&lt;/span&gt;image_id &lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;region us&lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;west&lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;token number&quot;&gt;2&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;query &lt;span class=&quot;token string&quot;&gt;&quot;Parameter.Value&quot;&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;output text&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;language-python&quot;&gt;&lt;code class=&quot;language-python&quot;&gt;cat &lt;span class=&quot;token operator&quot;&gt;&gt;&lt;/span&gt; containerd&lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;mng&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;yaml &lt;span class=&quot;token operator&quot;&gt;&amp;lt;&amp;lt;&lt;/span&gt;EOF&lt;br&gt;apiVersion&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; eksctl&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;io&lt;span class=&quot;token operator&quot;&gt;/&lt;/span&gt;v1alpha5&lt;br&gt;kind&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; ClusterConfig&lt;br&gt;&lt;br&gt;metadata&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;&lt;br&gt;  name&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; $CLUSTER_NAME&lt;br&gt;  region&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; $AWS_REGION&lt;br&gt;&lt;br&gt;managedNodeGroups&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;&lt;br&gt;  &lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt; name&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; containerd&lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;mng&lt;br&gt;    minSize&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token number&quot;&gt;1&lt;/span&gt;&lt;br&gt;    maxSize&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token number&quot;&gt;1&lt;/span&gt;&lt;br&gt;    desiredCapacity&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token number&quot;&gt;1&lt;/span&gt;&lt;br&gt;    instanceType&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; m5&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;xlarge&lt;br&gt;    ami&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; $AMI_ID&lt;br&gt;    overrideBootstrapCommand&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;|&lt;/span&gt;&lt;br&gt;      &lt;span class=&quot;token comment&quot;&gt;#!/bin/bash&lt;/span&gt;&lt;br&gt;      &lt;span class=&quot;token operator&quot;&gt;/&lt;/span&gt;etc&lt;span class=&quot;token operator&quot;&gt;/&lt;/span&gt;eks&lt;span class=&quot;token operator&quot;&gt;/&lt;/span&gt;bootstrap&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;sh Socrates &lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;container&lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;runtime containerd&lt;br&gt;    &lt;br&gt;EOF&lt;/code&gt;&lt;/pre&gt;
+&lt;h2 id=&quot;preparing-eks-nodes-to-use-estargz&quot;&gt;Preparing EKS nodes to use eStargz &lt;a class=&quot;direct-link&quot; href=&quot;#preparing-eks-nodes-to-use-estargz&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;Next, I need to install eStargz snapshotter plugin on my worker node. I use AWS Systems Manager on my nodes, so I will connect to the containerd node.&lt;/p&gt;
+&lt;pre class=&quot;language-python&quot;&gt;&lt;code class=&quot;language-python&quot;&gt;aws ssm start&lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;session &lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;target &lt;span class=&quot;token operator&quot;&gt;&amp;lt;&lt;/span&gt;Instance ID of the worker node&lt;span class=&quot;token operator&quot;&gt;&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Connect to the node (using ssh or Systems Manager) and back up the current containerd config file (/etc/containerd/config.toml) and replace it with:&lt;/p&gt;
+&lt;pre class=&quot;language-python&quot;&gt;&lt;code class=&quot;language-python&quot;&gt;sudo mv &lt;span class=&quot;token operator&quot;&gt;/&lt;/span&gt;etc&lt;span class=&quot;token operator&quot;&gt;/&lt;/span&gt;containerd&lt;span class=&quot;token operator&quot;&gt;/&lt;/span&gt;config&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;toml &lt;span class=&quot;token operator&quot;&gt;/&lt;/span&gt;etc&lt;span class=&quot;token operator&quot;&gt;/&lt;/span&gt;containerd&lt;span class=&quot;token operator&quot;&gt;/&lt;/span&gt;config&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;toml&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;bak&lt;br&gt;cat &lt;span class=&quot;token operator&quot;&gt;&gt;&lt;/span&gt; config&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;toml &lt;span class=&quot;token operator&quot;&gt;&amp;lt;&amp;lt;&lt;/span&gt;EOF&lt;br&gt;version &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;token number&quot;&gt;2&lt;/span&gt;&lt;br&gt;root &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;/var/lib/containerd&quot;&lt;/span&gt;&lt;br&gt;state &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;/run/containerd&quot;&lt;/span&gt;&lt;br&gt;&lt;br&gt;&lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt;grpc&lt;span class=&quot;token punctuation&quot;&gt;]&lt;/span&gt;&lt;br&gt;address &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;/run/containerd/containerd.sock&quot;&lt;/span&gt;&lt;br&gt;&lt;br&gt;&lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt;plugins&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;token string&quot;&gt;&quot;io.containerd.grpc.v1.cri&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;containerd&lt;span class=&quot;token punctuation&quot;&gt;]&lt;/span&gt;&lt;br&gt;default_runtime_name &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;runc&quot;&lt;/span&gt;&lt;br&gt;snapshotter &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;stargz&quot;&lt;/span&gt;&lt;br&gt;disable_snapshot_annotations &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt; false&lt;br&gt;&lt;br&gt;&lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt;plugins&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;token string&quot;&gt;&quot;io.containerd.grpc.v1.cri&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;]&lt;/span&gt;&lt;br&gt;sandbox_image &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;602401143452.dkr.ecr.us-west-2.amazonaws.com/eks/pause:3.5&quot;&lt;/span&gt;&lt;br&gt;&lt;br&gt;&lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt;plugins&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;token string&quot;&gt;&quot;io.containerd.grpc.v1.cri&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;containerd&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;runtimes&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;runc&lt;span class=&quot;token punctuation&quot;&gt;]&lt;/span&gt;&lt;br&gt;runtime_type &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;io.containerd.runc.v2&quot;&lt;/span&gt;&lt;br&gt;&lt;br&gt;&lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt;plugins&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;token string&quot;&gt;&quot;io.containerd.grpc.v1.cri&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;containerd&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;runtimes&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;runc&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;options&lt;span class=&quot;token punctuation&quot;&gt;]&lt;/span&gt;&lt;br&gt;SystemdCgroup &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt; true&lt;br&gt;&lt;br&gt;&lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt;plugins&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;token string&quot;&gt;&quot;io.containerd.grpc.v1.cri&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;cni&lt;span class=&quot;token punctuation&quot;&gt;]&lt;/span&gt;&lt;br&gt;bin_dir &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;/opt/cni/bin&quot;&lt;/span&gt;&lt;br&gt;conf_dir &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;/etc/cni/net.d&quot;&lt;/span&gt;&lt;br&gt;&lt;br&gt;&lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt;proxy_plugins&lt;span class=&quot;token punctuation&quot;&gt;]&lt;/span&gt;&lt;br&gt;  &lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt;proxy_plugins&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;stargz&lt;span class=&quot;token punctuation&quot;&gt;]&lt;/span&gt;&lt;br&gt;    &lt;span class=&quot;token builtin&quot;&gt;type&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;snapshot&quot;&lt;/span&gt;&lt;br&gt;    address &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;/run/containerd-stargz-grpc/containerd-stargz-grpc.sock&quot;&lt;/span&gt;&lt;br&gt;EOF&lt;br&gt;sudo mv config&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;toml &lt;span class=&quot;token operator&quot;&gt;/&lt;/span&gt;etc&lt;span class=&quot;token operator&quot;&gt;/&lt;/span&gt;containerd&lt;span class=&quot;token operator&quot;&gt;/&lt;/span&gt;config&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;toml&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Install FUSE:&lt;/p&gt;
+&lt;pre class=&quot;language-python&quot;&gt;&lt;code class=&quot;language-python&quot;&gt;sudo yum install fuse &lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;y&lt;br&gt;sudo modprobe fuse&lt;br&gt;sudo bash &lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;c &lt;span class=&quot;token string&quot;&gt;&#39;echo &quot;fuse&quot; &gt; /etc/modules-load.d/fuse.conf&#39;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Install the snapshotter from its &lt;a href=&quot;https://github.com/containerd/stargz-snapshotter/releases&quot;&gt;GitHub&lt;/a&gt; repository:&lt;/p&gt;
+&lt;pre class=&quot;language-python&quot;&gt;&lt;code class=&quot;language-python&quot;&gt;wget https&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;//&lt;/span&gt;github&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;com&lt;span class=&quot;token operator&quot;&gt;/&lt;/span&gt;containerd&lt;span class=&quot;token operator&quot;&gt;/&lt;/span&gt;stargz&lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;snapshotter&lt;span class=&quot;token operator&quot;&gt;/&lt;/span&gt;releases&lt;span class=&quot;token operator&quot;&gt;/&lt;/span&gt;download&lt;span class=&quot;token operator&quot;&gt;/&lt;/span&gt;v0&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;token number&quot;&gt;12.1&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;/&lt;/span&gt;stargz&lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;snapshotter&lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;v0&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;token number&quot;&gt;12.1&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;linux&lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;amd64&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;tar&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;gz&lt;br&gt;sudo tar xvzf stargz&lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;snapshotter&lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;v0&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;token number&quot;&gt;12.1&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;linux&lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;amd64&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;tar&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;gz &lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;C &lt;span class=&quot;token operator&quot;&gt;/&lt;/span&gt;usr&lt;span class=&quot;token operator&quot;&gt;/&lt;/span&gt;local&lt;span class=&quot;token operator&quot;&gt;/&lt;/span&gt;&lt;span class=&quot;token builtin&quot;&gt;bin&lt;/span&gt;&lt;br&gt;sudo wget &lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;O &lt;span class=&quot;token operator&quot;&gt;/&lt;/span&gt;etc&lt;span class=&quot;token operator&quot;&gt;/&lt;/span&gt;systemd&lt;span class=&quot;token operator&quot;&gt;/&lt;/span&gt;system&lt;span class=&quot;token operator&quot;&gt;/&lt;/span&gt;stargz&lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;snapshotter&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;service https&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;//&lt;/span&gt;raw&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;githubusercontent&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;com&lt;span class=&quot;token operator&quot;&gt;/&lt;/span&gt;containerd&lt;span class=&quot;token operator&quot;&gt;/&lt;/span&gt;stargz&lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;snapshotter&lt;span class=&quot;token operator&quot;&gt;/&lt;/span&gt;main&lt;span class=&quot;token operator&quot;&gt;/&lt;/span&gt;script&lt;span class=&quot;token operator&quot;&gt;/&lt;/span&gt;config&lt;span class=&quot;token operator&quot;&gt;/&lt;/span&gt;etc&lt;span class=&quot;token operator&quot;&gt;/&lt;/span&gt;systemd&lt;span class=&quot;token operator&quot;&gt;/&lt;/span&gt;system&lt;span class=&quot;token operator&quot;&gt;/&lt;/span&gt;stargz&lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;snapshotter&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;service&lt;br&gt;sudo systemctl enable &lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;now stargz&lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;snapshotter&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Finally, restart the containerd and kubelet:&lt;/p&gt;
+&lt;pre class=&quot;language-python&quot;&gt;&lt;code class=&quot;language-python&quot;&gt;sudo systemctl restart containerd&lt;br&gt;sudo systemctl restart kubelet&lt;/code&gt;&lt;/pre&gt;
+&lt;h2 id=&quot;test-lazy-pulling&quot;&gt;Test lazy-pulling &lt;a class=&quot;direct-link&quot; href=&quot;#test-lazy-pulling&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;I will now run the pod using my eStargz formatted image. Create a manifest for a new pod and replace the node name with the newly created node:&lt;/p&gt;
+&lt;pre class=&quot;language-python&quot;&gt;&lt;code class=&quot;language-python&quot;&gt;cat &lt;span class=&quot;token operator&quot;&gt;&gt;&lt;/span&gt; estargz&lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;pod&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;yaml &lt;span class=&quot;token operator&quot;&gt;&amp;lt;&amp;lt;&lt;/span&gt;EOF&lt;br&gt;apiVersion&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; v1&lt;br&gt;kind&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; Pod&lt;br&gt;metadata&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;&lt;br&gt;  name&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; stargz&lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;demo&lt;br&gt;spec&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;&lt;br&gt;  containers&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;&lt;br&gt;  &lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt; name&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; stargz&lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;demo&lt;br&gt;    image&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; $&lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;ECR_URI&lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;token number&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;esgz&lt;br&gt;    command&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;/bin/bash&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;-c&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;--&quot;&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;]&lt;/span&gt;&lt;br&gt;    args&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;while true; do sleep 30; done;&quot;&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;]&lt;/span&gt;&lt;br&gt;  nodeName&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; ip&lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;token number&quot;&gt;192&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;token number&quot;&gt;168&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;token number&quot;&gt;32&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;token number&quot;&gt;236&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;us&lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;west&lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;token number&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;compute&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;internal&lt;br&gt;EOF&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The pod started in 2 seconds:&lt;/p&gt;
+&lt;pre class=&quot;language-python&quot;&gt;&lt;code class=&quot;language-python&quot;&gt;k get pods&lt;br&gt;NAME                            READY   STATUS        RESTARTS      AGE&lt;br&gt;stargz&lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;demo                     &lt;span class=&quot;token number&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;/&lt;/span&gt;&lt;span class=&quot;token number&quot;&gt;1&lt;/span&gt;     Running       &lt;span class=&quot;token number&quot;&gt;0&lt;/span&gt;             2s&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;To compare, I ran the same pod on another node that didn’t use containerd. It took 45 seconds to start the same image. That’s a lot of improvement in pod startup time!!&lt;/p&gt;
+&lt;p&gt;Image pull time &lt;em&gt;without&lt;/em&gt; eStargz:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://res.craft.do/user/full/9d54cc03-adfe-f72f-3389-565eb7356d1d/doc/28146E5F-3F27-4D41-94B7-CF6EF7615505/46004B64-228E-4F69-B607-D0FBBF391149_2/AbByT341edypWUhHSsEY1F3qSAmSIf9KuHJwYVgzJQ0z/Image.jpeg&quot; alt=&quot;Image.jpeg&quot;&gt;&lt;/p&gt;
+&lt;p&gt;Image pull with eStargz:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://res.craft.do/user/full/9d54cc03-adfe-f72f-3389-565eb7356d1d/doc/28146E5F-3F27-4D41-94B7-CF6EF7615505/495F26BE-BA38-48DF-B3F6-9915FDF52E5C_2/N7tCcNUyi2GGlpNmWfwIzNnBzbdmKsxhWnhSRUVkw7Mz/Image.jpeg&quot; alt=&quot;Image.jpeg&quot;&gt;&lt;/p&gt;
+&lt;h2 id=&quot;prefetching-files&quot;&gt;Prefetching files &lt;a class=&quot;direct-link&quot; href=&quot;#prefetching-files&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;What if you wanted the runtime to always download a file and disable lazy-pulling?&lt;/p&gt;
+&lt;p&gt;eStargz supports prefetching of files. This mitigates runtime performance drawbacks caused by the on-demand fetching of each file.&lt;/p&gt;
+&lt;p&gt;The example below always pulls &lt;code&gt;ls&lt;/code&gt; and &lt;code&gt;bash&lt;/code&gt; files before starting the container:&lt;/p&gt;
+&lt;pre class=&quot;language-python&quot;&gt;&lt;code class=&quot;language-python&quot;&gt;$ cat &lt;span class=&quot;token operator&quot;&gt;&amp;lt;&amp;lt;&lt;/span&gt;EOF &lt;span class=&quot;token operator&quot;&gt;&gt;&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;/&lt;/span&gt;tmp&lt;span class=&quot;token operator&quot;&gt;/&lt;/span&gt;record&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;json&lt;br&gt;&lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;path&quot;&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;/usr/bin/bash&quot;&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;path&quot;&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;/usr/bin/ls&quot;&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;&lt;br&gt;EOF&lt;br&gt;$ nerdctl image convert &lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;estargz &lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;oci \&lt;br&gt;    &lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;estargz&lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;record&lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;token keyword&quot;&gt;in&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;/&lt;/span&gt;tmp&lt;span class=&quot;token operator&quot;&gt;/&lt;/span&gt;record&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;json \&lt;br&gt;    ubuntu&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;token number&quot;&gt;21.04&lt;/span&gt; ubuntu&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;token number&quot;&gt;21.04&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;ls&lt;/code&gt;&lt;/pre&gt;
+&lt;h2 id=&quot;seekable-oci-(soci)&quot;&gt;Seekable OCI (SOCI) &lt;a class=&quot;direct-link&quot; href=&quot;#seekable-oci-(soci)&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;Seekable OCI (SOCI) is a technology open sourced by AWS that enables containers to launch faster by lazily loading the container image. SOCI works by creating an index (SOCI Index) of the files within an existing container image. This index is a key enabler to launching containers faster, providing the capability of extracting an individual file from a container image before downloading the entire archive.&lt;/p&gt;
+&lt;p&gt;SOCI borrows some of the design principles from stargz-snapshotter, but takes a different approach.&lt;/p&gt;
+&lt;p&gt;A SOCI index is generated separately from the container image, and is stored in the registry as an &lt;a href=&quot;https://github.com/opencontainers/artifacts&quot;&gt;OCI Artifact&lt;/a&gt; and linked back to the container image by &lt;a href=&quot;https://github.com/opencontainers/tob/blob/main/proposals/wg-reference-types.md&quot;&gt;OCI Reference Types&lt;/a&gt;. This means that the container images do not need to be converted, image digests do not change, and image signatures remain valid.&lt;/p&gt;
+&lt;p&gt;Most OCI registries like DockerHub and ECR do not currently support the &amp;quot;referrers&amp;quot; feature. So you cannot use SOCI unless you run a local &lt;a href=&quot;https://oras.land/&quot;&gt;ORAS&lt;/a&gt; registry.&lt;/p&gt;
+&lt;h2 id=&quot;conclusion&quot;&gt;Conclusion &lt;a class=&quot;direct-link&quot; href=&quot;#conclusion&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;If you are looking to reduce container start time for your workloads, eStargz snapshotter is definitely worth a look. You’ll have to change your existing container build pipelines to add a step to convert images though. When SOCI support is available in OCI registries, you’ll be able to lazily-pull images without converting them first.&lt;/p&gt;
+&lt;p&gt;You’ll also have to install eStargz snapshotter on your nodes and configure containerd to use the plugin. Creating a custom AMI or using AWS Systems manager will be the best way to do that. You could also use a DaemonSet to configure the system, but keep in mind that you’ll need to account for restarting the containerd and kubelet.&lt;/p&gt;
+
+			
+				
+				
+				&lt;img src=&quot;https://blog.realvarez.com/api/ga?v=1&amp;_v=j83&amp;t=pageview&amp;dr=https%3A%2F%2Frss-feed-reader.com&amp;_s=1&amp;dh=realvarez.com&amp;dp=%2Fposts%2Festargz%2F&amp;ul=en-us&amp;de=UTF-8&amp;dt=Using%20eStargz%20to%20reduce%20container%20startup%20time%20on%20Amazon%20EKS&amp;tid=G-B5XRB3YVTR&quot; width=&quot;1&quot; height=&quot;1&quot; style=&quot;display:none&quot; alt=&quot;&quot;&gt;
+			
+		</content>
+	</entry>
+	
+	<entry>
+		<title>Autoscale Kubernetes Metrics Server</title>
+		<link href="https://blog.realvarez.com/posts/autoscale-metrics-server/"/>
+		<updated>2022-11-02T17:00:00-07:00</updated>
+		<id>https://blog.realvarez.com/posts/autoscale-metrics-server/</id>
+		<content type="html">
+		  &lt;p&gt;Many organizations are happy to standardize their infrastructure platform on Kubernetes. Kubernetes gives engineers a consistent platform across cloud providers and on premises. It abstracts underlying infrastructure so engineers can focus on writing code without having tight-coupling with methods for load balancing, observability, configuration, secrets management, etc.&lt;/p&gt;
+&lt;p&gt;I frequently speak with organizations that run their entire workloads in one or two Kubernetes clusters. Effectively, they have moved their entire data centers into Kubernetes clusters.&lt;/p&gt;
+&lt;p&gt;Now, Kubernetes is not without its flaws. Especially when operating at scale. Once clusters go beyond hundreds of nodes, nuanced behavior starts showing up. Besides scaling the Kubernetes control plane and data plane, platform teams have to scale Kubernetes components like CoreDNS, core components, and add-ons.&lt;/p&gt;
+&lt;p&gt;In this post, I am going to show how to scale the metrics server add-on, so when your cluster scales the Horizontal Pod Autoscaler can reliably scale your workload.&lt;/p&gt;
+&lt;h2 id=&quot;scaling-kubernetes-add-ons&quot;&gt;Scaling Kubernetes add-ons &lt;a class=&quot;direct-link&quot; href=&quot;#scaling-kubernetes-add-ons&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;Kubernetes add-ons are software packages that extend the functionality of Kubernetes. Vanilla Kubernetes clusters lack capabilities that most production clusters require. For example, data plane scaling functionality in Kubernetes is provided by the &lt;a href=&quot;https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler&quot;&gt;Kubernetes Cluster Autoscaler&lt;/a&gt;. Metrics server collects Node and Pod metrics. Log aggregators like Fluent Bit and Fluentd allow you to collect Kubernetes application and system logs.&lt;/p&gt;
+&lt;p&gt;It is a best practice to deploy these add-ons with resource limits to account for bugs and memory leaks. Requests and limits allow us to control system resource allocated to each Pod. This feature makes it safer to run multiple Pods on a node without worrying about resource contention or oversubscription.&lt;/p&gt;
+&lt;p&gt;Add-ons are deployed either as DaemonSets or Deployments. As a cluster scales, DaemonSets scale automatically as they run once per node. However, add-ons deployed as Deployments do not scale automatically because they are unaware of the size of the cluster’s scale.&lt;/p&gt;
+&lt;p&gt;As the cluster scales, add-ons such as &lt;a href=&quot;https://github.com/kubernetes-sigs/metrics-server&quot;&gt;metrics-server&lt;/a&gt; and &lt;a href=&quot;https://github.com/kubernetes/kube-state-metrics&quot;&gt;kube-state-metrics&lt;/a&gt; have to hold more data in memory. The default resource requests on the metrics-server are sized for clusters of up to 100 nodes. In clusters larger than that, the metrics-server can run out of memory, which breaks the Horizontal Pod Autoscaler.&lt;/p&gt;
+&lt;p&gt;As a result, operators have to scale add-ons, such as the metrics server, vertically as the cluster scales. &lt;a href=&quot;https://github.com/kubernetes/autoscaler/tree/master/addon-resizer&quot;&gt;Addon-resizer&lt;/a&gt; is an open source tool you can use to scale Deployments in proportion to the data plane. While the Kubernetes &lt;a href=&quot;https://github.com/kubernetes-sigs/cluster-proportional-autoscaler&quot;&gt;Cluster Proportional Autoscaler&lt;/a&gt; scales Deployments horizontally, the addon-resizer scales Deployments vertically.&lt;/p&gt;
+&lt;p&gt;Some cloud providers use addon-resizer to scale the metrics-server add-on. Amazon EKS currently doesn&#39;t automatically scale metrics-server. I am going to run addon-resizer to autoscale the metrics-server Deployment in an EKS cluster.&lt;/p&gt;
+&lt;h2 id=&quot;addon-resizer&quot;&gt;Addon-resizer &lt;a class=&quot;direct-link&quot; href=&quot;#addon-resizer&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;Addon-resizer is a container that vertically scales a Deployment based on the number of nodes in your cluster. It scales Deployments linearly as the cluster’s data plane grows and shrinks.&lt;/p&gt;
+&lt;p&gt;The container monitors your cluster periodically and increases or decreases the requests and limits of a Deployment in proportion to the number of nodes. Vertical scaling implies that &lt;strong&gt;addon-resizer will recreate the Pods&lt;/strong&gt; with newer resource limits.&lt;/p&gt;
+&lt;p&gt;At the core of addon-resizer lies the *nanny *program.&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;Usage of ./pod_nanny:
+      --acceptance-offset=20: A number from range 0-100. The dependent&#39;s resources are rewritten when they deviate from expected by a percentage that is higher than this threshold. Can&#39;t be lower than recommendation-offset.
+      --alsologtostderr[=false]: log to standard error as well as files
+      --container=&amp;quot;pod-nanny&amp;quot;: The name of the container to watch. This defaults to the nanny itself.
+      --cpu=&amp;quot;MISSING&amp;quot;: The base CPU resource requirement.
+      --deployment=&amp;quot;&amp;quot;: The name of the deployment being monitored. This is required.
+      --extra-cpu=&amp;quot;0&amp;quot;: The amount of CPU to add per node.
+      --extra-memory=&amp;quot;0Mi&amp;quot;: The amount of memory to add per node.
+      --extra-storage=&amp;quot;0Gi&amp;quot;: The amount of storage to add per node.
+      --log-flush-frequency=5s: Maximum number of seconds between log flushes
+      --log_backtrace_at=:0: when logging hits line file:N, emit a stack trace
+      --log_dir=&amp;quot;&amp;quot;: If non-empty, write log files in this directory
+      --logtostderr[=true]: log to standard error instead of files
+      --memory=&amp;quot;MISSING&amp;quot;: The base memory resource requirement.
+      --namespace=&amp;quot;&amp;quot;: The namespace of the ward. This defaults to the nanny pod&#39;s own namespace.
+      --pod=&amp;quot;&amp;quot;: The name of the pod to watch. This defaults to the nanny&#39;s own pod.
+      --poll-period=10000: The time, in milliseconds, to poll the dependent container.
+      --recommendation-offset=10: A number from range 0-100. When the dependent&#39;s resources are rewritten, they are set to the closer end of the range defined by this percentage threshold.
+      --stderrthreshold=2: logs at or above this threshold go to stderr
+      --storage=&amp;quot;MISSING&amp;quot;: The base storage resource requirement.
+      --v=0: log level for V logs
+      --vmodule=: comma-separated list of pattern=N settings for file-filtered logging
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The nanny program takes the base CPU and memory and adds extra resources per node. Here’s the formula it uses:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;Base  CPU + (Extra CPU * Nodes)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Let’s say we allocate 100m CPU and 200Mi memory to a container in our cluster. We configure addon-resizer to add 1m CPU and 2Mi memory per node. When the cluster scales to 75 nodes, addon-resizer will scale the target container using the formula below:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;100m+(1m*75) = 175m
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;It will also increase memory:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;200Mi + (2Mi*75)= 350Mi
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h2 id=&quot;scale-metrics-server&quot;&gt;Scale metrics-server &lt;a class=&quot;direct-link&quot; href=&quot;#scale-metrics-server&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;The first question you may have is when should you scale metrics-server. The default resource configuration in metrics-server Deployment is recommended for clusters of up to 100 nodes. Beyond that you may notice the metrics-server restarting frequently (as it gets killed by Kubernetes Out of Memory killer).&lt;/p&gt;
+&lt;p&gt;When metrics-server needs more resources than allocated &lt;code&gt;kubectl top nodes&lt;/code&gt; and &lt;code&gt;kubectl top pods&lt;/code&gt; will fail. You may get the following error message:&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;unable to get metrics for resource cpu: unable to fetch metrics from resource metrics API: the server is currently unable to handle the request (get pods.metrics.k8s.io)&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;Also, the Horizontal Pod Autoscaler may stop working. If you run &lt;code&gt;kubectl get apiservices v1beta1.metrics.k8s.io&lt;/code&gt;, you may get the following message:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;NAME                     SERVICE                      AVAILABLE                      AGE
+v1beta1.metrics.k8s.io   kube-system/metrics-server   False (FailedDiscoveryCheck)   12m
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h2 id=&quot;deploy-addon-resizer&quot;&gt;Deploy addon-resizer &lt;a class=&quot;direct-link&quot; href=&quot;#deploy-addon-resizer&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;The addon-resizer container can run in its own Pod or as a sidecar. We’re going to deploy the container as a sidecar in the metrics-server Deployment.&lt;/p&gt;
+&lt;p&gt;The metrics server defaults to 100m CPU and 200Mi memory. Get the current limits:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;kubectl -n kube-system get \
+  deployments metrics-server \
+  -o jsonpath=&#39;{.spec.template.spec.containers[].resources}&#39;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Here’s the output from my cluster:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;{&amp;quot;requests&amp;quot;:{&amp;quot;cpu&amp;quot;:&amp;quot;100m&amp;quot;,&amp;quot;memory&amp;quot;:&amp;quot;200Mi&amp;quot;}}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;My cluster currently has 5 nodes. I’ll configure the addon-resizer to scale the metrics-server Deployment vertically by adding 1m CPU per node in addition to the base CPU which is set to 20m. The base memory is 15Mi, and addon-resizer will increase metrics-server memory by 2Mi per node. I took these values from addon-resizer recommendations.&lt;/p&gt;
+&lt;p&gt;Deploy the manifest to create a ClusterRole, Role, and ClusterRoleBinding that gives the metrics-server service account the permissions to patch the metrics-server Deployment:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;cat &amp;lt;&amp;lt;EOF | kubectl apply -f -
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: eks:metrics-server-nanny
+  labels:
+    k8s-app: metrics-server
+rules:
+- nonResourceURLs:
+  - /metrics
+  verbs:
+  - get
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: eks:metrics-server-nanny
+  labels:
+    k8s-app: metrics-server
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: eks:metrics-server-nanny
+subjects:
+  - kind: ServiceAccount
+    name: metrics-server
+    namespace: kube-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: metrics-server-nanny
+  namespace: kube-system
+  labels:
+    k8s-app: metrics-server
+rules:
+- apiGroups:
+  - &amp;quot;&amp;quot;
+  resources:
+  - pods
+  verbs:
+  - get
+- apiGroups:
+  - apps
+  resources:
+  - deployments
+  resourceNames:
+  - metrics-server
+  verbs:
+  - get
+  - patch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: metrics-server-nanny
+  namespace: kube-system
+  labels:
+    k8s-app: metrics-server
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: metrics-server-nanny
+subjects:
+  - kind: ServiceAccount
+    name: metrics-server
+    namespace: kube-system
+EOF
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Create a patch file to add the nanny container to the metrics-server Deployment.&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;cat &amp;gt; metrics-server-addon-patch.yaml &amp;lt;&amp;lt; EOF
+spec:
+  template:
+    spec:
+      containers:
+      - name: metrics-server-nanny
+          image: registry.k8s.io/autoscaling/addon-resizer:1.8.14
+          resources:
+            limits:
+              cpu: 40m
+              memory: 25Mi
+            requests:
+              cpu: 40m
+              memory: 25Mi
+          env:
+            - name: MY_POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: MY_POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+          command:
+            - /pod_nanny
+            - --cpu=20m
+            - --extra-cpu=1m
+            - --memory=15Mi
+            - --extra-memory=2Mi
+            - --threshold=5
+            - --deployment=metrics-server
+            - --container=metrics-server
+            - --poll-period=30000
+            - --estimator=exponential
+            - --minClusterSize=10
+            - --use-metrics=true
+EOF
+
+kubectl -n kube-system patch deployments metrics-server --patch-file metrics-server-addon-patch.yaml
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;If you install the metrics-server as documented in Amazon EKS documentation, it requests 100m CPU and 200Mi memory. After deploying the patch above, the metrics server requests set to 40m CPU and 15Mi memory. As you add more nodes, the nanny will automatically adjust the requests and limits for the metrics-server container.&lt;/p&gt;
+&lt;p&gt;I scaled my cluster to 15 nodes and the addon-resizer configured metrics-server requests to 35m CPU and 45Mi memory.&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;20baseCPU+(15nodes*1extraCPU) = 35m
+
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Memory calculation&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;15baseMemory+(15nodes*2extraMemory) = 45Mi
+
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Addon-resizer calculates the resources reservation for the metrics-server container and  restarts the container automatically.&lt;/p&gt;
+&lt;h2 id=&quot;what-about-scaling-metrics-server-horizontally%3F&quot;&gt;What about scaling metrics server horizontally? &lt;a class=&quot;direct-link&quot; href=&quot;#what-about-scaling-metrics-server-horizontally%3F&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;While you can run metrics server in high-availability mode, its main purpose is ensuring that if one of the metrics server Pods terminate, the other one can still serve requests.&lt;/p&gt;
+&lt;p&gt;Running two instances of metrics server doesn’t provide any further benefits. Both instances will scrape all nodes to collect metrics, but only one instance will be actively serving metrics API.&lt;/p&gt;
+&lt;h2 id=&quot;conclusion&quot;&gt;Conclusion &lt;a class=&quot;direct-link&quot; href=&quot;#conclusion&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;The Amazon EKS documentation currently documents steps to deploy metrics-server in static configuration. You can use addon-resizer to autoscale the metrics-server based on the number of nodes in your cluster.&lt;/p&gt;
+
+			
+				
+				
+				&lt;img src=&quot;https://blog.realvarez.com/api/ga?v=1&amp;_v=j83&amp;t=pageview&amp;dr=https%3A%2F%2Frss-feed-reader.com&amp;_s=1&amp;dh=realvarez.com&amp;dp=%2Fposts%2Fautoscale-metrics-server%2F&amp;ul=en-us&amp;de=UTF-8&amp;dt=Autoscale%20Kubernetes%20Metrics%20Server&amp;tid=G-B5XRB3YVTR&quot; width=&quot;1&quot; height=&quot;1&quot; style=&quot;display:none&quot; alt=&quot;&quot;&gt;
+			
+		</content>
+	</entry>
+	
+	<entry>
+		<title>The Dawn of Everything by David Graeber &amp; David Wengrow</title>
+		<link href="https://blog.realvarez.com/posts/book-review-dawn-of-everything/"/>
+		<updated>2022-11-11T16:00:00-08:00</updated>
+		<id>https://blog.realvarez.com/posts/book-review-dawn-of-everything/</id>
+		<content type="html">
+		  &lt;p&gt;The late David Graeber and David Wengrow are the foremost anthropologist and left-wing thinkers of our times. Their decade-long research culminates in an epic retelling of the human history. The Dawn of Everything: A New History of Humanity is an attempt to upend the premise of modern day understanding oh political and social history. The book challenges the notion that private property has shaped our current social landscape. It tries to explore the origins of social inequality and define concepts of personal freedom.&lt;/p&gt;
+&lt;p&gt;Besides criticizing the works of Rousseau and Hobbes, the book challenges works by popular intellectuals like Jared Diamond, Steven Pinker, Francis Fukuyama and Yuval Noah Harari in a provocative way. These authors regurgitate the same old myths in spite of the new archeological and anthropological research results.&lt;/p&gt;
+&lt;p&gt;The authors disagree that property rights caused humankind to descend into unkind and selfish beings from an original state of egalitarian innocence. They note that hierarchy and domination, and cynical self-interest, have always been the basis of human society.&lt;/p&gt;
+&lt;p&gt;The book dispels the myths that prior to becoming capitalists, humans (hunter-gatherers) were savage, politically immature, and egalitarian. Per the authors, human societies before the advent of farming were not confined to small, egalitarian bands. In fact, hunter-gatherers traveled farther distances and mingled with other groups more than we do today.&lt;/p&gt;
+&lt;p&gt;A first step towards a more accurate, and hopeful, picture of world history might be to abandon the Garden of Eden once and for all, and simply do away with the notion that for hundreds of thousands of years, everyone on earth shared the same idyllic form of social organization.&lt;br&gt;
+The core argument of the book is extremely political and challenges the status quo. The book uses anthropological researches about Native Americans, Native Andeans, Egyptians, early Mesopotamians, Eastern Europeans to posit that:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;The 17th century Amerindian society was socially equal much before Europeans started questioning equality in the French society that was intrinsically hierarchical. They impressed Europeans with their eloquence and powers of reasoned argument. “When it came to questions of personal freedom, the equality of men and women, sexual mores or popular sovereignty – or even, for that matter, theories of depth psychology18 – indigenous American attitudes are likely to be far closer to the reader’s own than seventeenth-century European ones.”&lt;/li&gt;
+&lt;li&gt;People across Americas, Europe, and Africa changed social structures as seasons changed. Banding together one season and venturing in smaller groups during another. The social and political structure in these societies was more fluid than the contemporary political arrangement.&lt;/li&gt;
+&lt;li&gt;Groups across the world chose not to farm. Farming is hard work and humans opted for easier sources of food. The first humans farmed on flood retreat lands, which doesn&#39;t require plowing. “Farming, as we can now see, often started out as an economy of deprivation: you only invented it when there was nothing else to be done, which is why it tended to happen first in areas where wild resources were thinnest on the ground.” It took 3000 years for farming to become a standard practice.&lt;/li&gt;
+&lt;li&gt;Instead of tilling, threshing, irrigating, and breaking their backs, humans spend their time feasting, dancing, maintaining gardens, practicing botany, playing sports, weaving, hunting, fishing, and gathering nuts. Farming ties farmers to their lands. Non-farmers had the freedom to move as they pleased.&lt;/li&gt;
+&lt;li&gt;Unlike in current times, when capitalism and authoritarianism are standard, hunter-gatherers had a diverse social and political setups. Throughout pre-history, there were masses that achieved egalitarianism and self-governance.&lt;/li&gt;
+&lt;li&gt;Many early cities, some with up to 25,000 citizens, had no centralized administration. Early societies had the freedom to choose the society they lived in, which is lost in today’s age. “An origin for ‘the state’ has long been sought in such diverse places as ancient Egypt, Inca Peru and Shang China, but what we now regard as states turn out not to be a constant of history at all; not the result of a long evolutionary process that began in the Bronze Age, but rather a confluence of three political forms – sovereignty, administration and charismatic competition – that have different origins.”&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;The main takeaway for me was the human history hasn’t progressed in a linear fashion. Capitalism and the modern pseudo-democracy might very well not be the pinnacle of human evolution.&lt;br&gt;
+This is a very interesting book even though it is plagued by digressions and sometimes excessive polemic. 3.5/5 ⭐️.&lt;/p&gt;
+
+			
+				
+				
+				&lt;img src=&quot;https://blog.realvarez.com/api/ga?v=1&amp;_v=j83&amp;t=pageview&amp;dr=https%3A%2F%2Frss-feed-reader.com&amp;_s=1&amp;dh=realvarez.com&amp;dp=%2Fposts%2Fbook-review-dawn-of-everything%2F&amp;ul=en-us&amp;de=UTF-8&amp;dt=The%20Dawn%20of%20Everything%20by%20David%20Graeber%20%26%20David%20Wengrow&amp;tid=G-B5XRB3YVTR&quot; width=&quot;1&quot; height=&quot;1&quot; style=&quot;display:none&quot; alt=&quot;&quot;&gt;
+			
+		</content>
+	</entry>
+	
+	<entry>
+		<title>Reduce Amazon EKS cost by scaling node groups to zero</title>
+		<link href="https://blog.realvarez.com/posts/scale-eks-mng-to-zero/"/>
+		<updated>2022-11-15T16:00:00-08:00</updated>
+		<id>https://blog.realvarez.com/posts/scale-eks-mng-to-zero/</id>
+		<content type="html">
+		  &lt;p&gt;Amazon EKS just released the support for &lt;a href=&quot;https://aws.amazon.com/blogs/containers/amazon-eks-now-supports-kubernetes-version-1-24/&quot;&gt;Kubernetes version 1.24&lt;/a&gt;. The new version supports a bunch of cool features. My favorite feature in this release is the ability to scale EKS managed node groups to (and from) zero.&lt;/p&gt;
+&lt;p&gt;Many customers I engage with have workloads that don’t run continuously. A good example is building software. Software build jobs run when new development teams push new code. Outside of business hours, the supporting infrastructure (like nodes) sits idle. Customers use autoscaling to scale down node groups, but managed node groups required a minimum of 1 node in a node group previously. That’s one node too many, especially when you need beefier and costly nodes with GPUs.&lt;/p&gt;
+&lt;p&gt;Scaling down to zero results in significant cost savings in such cases. In my opinion, you wouldn’t want to scale your entire cluster to zero. After all, you’d need some nodes to run Cluster Autoscaler and other shared services like Prometheus, AWS Load Balancer, CoreDNS, etc. You can use EKS on Fargate to run some of these services. But keep in mind that Prometheus requires a block storage, and AWS Fargate doesn’t support Amazon EBS yet.&lt;/p&gt;
+&lt;p&gt;You’d want to run a managed node group for your shared services, like Cluster Autoscaler, that run continuously. You can then add another node group for workloads that spawn periodically, and scale that node group to zero.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://res.craft.do/user/full/9d54cc03-adfe-f72f-3389-565eb7356d1d/doc/1CAE5716-0A06-487B-94D9-ED3A26E55B46/F10EE54C-3121-4A95-A3E8-2084AC07ED39_2/0ePoBv7QUOJphRVgz14AABF7CLN8q6hh0yNumolViQMz/Untitled%20Diagram.drawio.png&quot; alt=&quot;Untitled Diagram.drawio.png&quot;&gt;&lt;/p&gt;
+&lt;h2 id=&quot;cluster-autoscaler-managed-node-group-cache&quot;&gt;Cluster Autoscaler Managed Node group cache &lt;a class=&quot;direct-link&quot; href=&quot;#cluster-autoscaler-managed-node-group-cache&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;The Kubernetes Cluster Autoscaler project added support for scaling node groups to and from zero in version 0.6.1. However, it only worked if you added &lt;a href=&quot;https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/FAQ.md#how-can-i-scale-a-node-group-to-0&quot;&gt;specific tags&lt;/a&gt; to Auto Scaling groups. In other words, after creating a managed node group, you had to find out the associated Auto Scaling group and add Cluster Autoscaler tags yourself.&lt;/p&gt;
+&lt;p&gt;Starting Kubernetes version 1.24, you can create node groups (or tag existing node groups) with Cluster Autoscaler tags and Cluster Autoscaler will scale that node group to and from zero.&lt;/p&gt;
+&lt;p&gt;To enable scaling to and from zero, the awesome EKS team contributed a feature to the upstream Cluster Autoscaler project. The new feature adds a manage node group cache that holds labels and taints associated with managed node groups. Cluster Autoscaler now uses the EKS &lt;a href=&quot;https://docs.aws.amazon.com/eks/latest/APIReference/API_DescribeNodegroup.html&quot;&gt;&lt;code&gt;DescribeNodegroup&lt;/code&gt;&lt;/a&gt; API to determine a node&#39;s label and taints when there are no nodes in the node group. This allows scaling to and from zero and doesn&#39;t require adding Auto Scaling group tags.&lt;/p&gt;
+&lt;h2 id=&quot;cluster-autoscaler-tags-for-scaling-to-zero&quot;&gt;Cluster Autoscaler tags for scaling to zero &lt;a class=&quot;direct-link&quot; href=&quot;#cluster-autoscaler-tags-for-scaling-to-zero&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;Before you can start scaling a managed node group to and from zero, you’d need to &lt;a href=&quot;https://docs.aws.amazon.com/eks/latest/userguide/autoscaling.html&quot;&gt;add a few tags&lt;/a&gt; to your node group. The tags you attach to your node group will help Cluster Autoscaler determine which node group to scale when a Pod is pending. You can add tags that help Cluster Autoscaler taints, labels, and node group’s resources like &lt;code&gt;WindowsENI&lt;/code&gt;, &lt;code&gt;PrivateIPv4Address&lt;/code&gt;, etc.&lt;/p&gt;
+&lt;p&gt;Labels and taints will tell the Kubernetes scheduler to assign Pods to specific nodes. When those Pods don’t have a node to run on (which will be the case when the node group is scaled to zero), Cluster Autoscaler can determine which node group to scale based on the tags. Let’s explore it using an example.&lt;/p&gt;
+&lt;h2 id=&quot;scaling-a-managed-node-group-from-zero&quot;&gt;Scaling a managed node group from zero &lt;a class=&quot;direct-link&quot; href=&quot;#scaling-a-managed-node-group-from-zero&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;You’d need a Kubernetes version 1.24 cluster to follow along. My EKS cluster already has node group, and I have &lt;a href=&quot;https://docs.aws.amazon.com/eks/latest/userguide/autoscaling.html&quot;&gt;installed Cluster Autoscaler&lt;/a&gt; using EKS documentation.&lt;/p&gt;
+&lt;p&gt;Cluster Autoscaler needs the permissions to call the EKS &lt;code&gt;DescribeNodegroup&lt;/code&gt; API to be able to read a node group&#39;s tags. The instructions in EKS documentation currently do not add &lt;code&gt;DescribeNodegroup&lt;/code&gt; permissions to the Cluster Autoscaler IAM role.&lt;/p&gt;
+&lt;p&gt;The first thing you’d need to do is create an IAM policy that allows the Cluster Autoscaler IAM role to use &lt;code&gt;DescribeNodegroup&lt;/code&gt; API.&lt;/p&gt;
+&lt;p&gt;Create a policy to allow EKS &lt;code&gt;DescribeNodegroup&lt;/code&gt;  API:&lt;/p&gt;
+&lt;pre class=&quot;language-python&quot;&gt;&lt;code class=&quot;language-python&quot;&gt;cat &lt;span class=&quot;token operator&quot;&gt;&gt;&lt;/span&gt; describe&lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;nodegroup&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;json &lt;span class=&quot;token operator&quot;&gt;&amp;lt;&amp;lt;&lt;/span&gt; EOF&lt;br&gt;&lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;&lt;br&gt;    &lt;span class=&quot;token string&quot;&gt;&quot;Version&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;2012-10-17&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt;&lt;br&gt;    &lt;span class=&quot;token string&quot;&gt;&quot;Statement&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt;&lt;br&gt;        &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;&lt;br&gt;            &lt;span class=&quot;token string&quot;&gt;&quot;Action&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt;&lt;br&gt;                &lt;span class=&quot;token string&quot;&gt;&quot;eks:DescribeNodegroup&quot;&lt;/span&gt;&lt;br&gt;            &lt;span class=&quot;token punctuation&quot;&gt;]&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt;&lt;br&gt;            &lt;span class=&quot;token string&quot;&gt;&quot;Effect&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;Allow&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt;&lt;br&gt;            &lt;span class=&quot;token string&quot;&gt;&quot;Resource&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;*&quot;&lt;/span&gt;&lt;br&gt;        &lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;&lt;br&gt;    &lt;span class=&quot;token punctuation&quot;&gt;]&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;&lt;br&gt;EOF&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Now you need to add this policy to the Cluster Autoscaler IAM Role. Determine the name of the IAM Role attached to the Cluster Autoscaler service account:&lt;/p&gt;
+&lt;pre class=&quot;language-python&quot;&gt;&lt;code class=&quot;language-python&quot;&gt;CA_IAM_ROLE&lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt;$&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;kubectl &lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;n kube&lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;system get  sa cluster&lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;autoscaler &lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;o  jsonpath&lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;token string&quot;&gt;&#39;{.metadata.annotations.eks\.amazonaws\.com/role-arn}&#39;&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;|&lt;/span&gt; sed &lt;span class=&quot;token string&quot;&gt;&#39;s|.*/||&#39;&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&quot;https://res.craft.do/user/full/9d54cc03-adfe-f72f-3389-565eb7356d1d/doc/1CAE5716-0A06-487B-94D9-ED3A26E55B46/6EF2F66E-E9B7-4B3D-9D75-06400FAE0BF2_2/gI025AVUilKKRF9GfkjpTeq3GmtiWypNeTVa4uE6XYYz/Image.png&quot; alt=&quot;Image.png&quot;&gt;&lt;/p&gt;
+&lt;p&gt;Then, add the policy you created to the IAM role that Cluster Autoscaler uses:&lt;/p&gt;
+&lt;pre class=&quot;language-python&quot;&gt;&lt;code class=&quot;language-python&quot;&gt;aws iam put&lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;role&lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;policy &lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;role&lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;name $CA_IAM_ROLE \&lt;br&gt;  &lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;policy&lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;name EKSDescribeNodegroup \&lt;br&gt;  &lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;policy&lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;document &lt;span class=&quot;token builtin&quot;&gt;file&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;//&lt;/span&gt;describe&lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;nodegroup&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;json&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Now you can start creating a new node group that you can set to scale to and from zero. Find out the role attached to an existing node group in your cluster. You can use AWS CLI to query that information.&lt;/p&gt;
+&lt;pre class=&quot;language-python&quot;&gt;&lt;code class=&quot;language-python&quot;&gt;&lt;span class=&quot;token comment&quot;&gt;# Store your EKS cluster name in an environment variable&lt;/span&gt;&lt;br&gt;EKS_CLUSTER&lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;&amp;lt;&lt;/span&gt;YOUR CLUSTER NAME&lt;span class=&quot;token operator&quot;&gt;&gt;&lt;/span&gt;&lt;br&gt;AWS_ACCOUNT&lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt;$&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;aws sts get&lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;caller&lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;identity &lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;query &lt;span class=&quot;token string&quot;&gt;&#39;Account&#39;&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;output text&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;br&gt;&lt;br&gt;NODE_ROLE&lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt;$&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;aws eks describe&lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;nodegroup \&lt;br&gt;  &lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;cluster&lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;name $EKS_CLUSTER \&lt;br&gt;  &lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;nodegroup&lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;name &lt;span class=&quot;token operator&quot;&gt;&amp;lt;&lt;/span&gt;YOUR NODE GROUP NAME&lt;span class=&quot;token operator&quot;&gt;&gt;&lt;/span&gt; \&lt;br&gt;  &lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;query &lt;span class=&quot;token string&quot;&gt;&#39;nodegroup.nodeRole&#39;&lt;/span&gt; \&lt;br&gt;  &lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;output text&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;You’d also need to provide the subnets for the new node group. You can use &lt;code&gt;describe-nodegroup&lt;/code&gt; to find out the subnets attached to an existing node group.&lt;/p&gt;
+&lt;p&gt;Create a node group with a label that you will later use to assign Pods to nodes in this node group:&lt;/p&gt;
+&lt;pre class=&quot;language-python&quot;&gt;&lt;code class=&quot;language-python&quot;&gt;aws eks create&lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;nodegroup \&lt;br&gt; &lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;cli&lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;token builtin&quot;&gt;input&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;json &#39;&lt;br&gt;&lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;&lt;br&gt;  &lt;span class=&quot;token string&quot;&gt;&quot;clusterName&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;${EKS_CLUSTER}&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt;&lt;br&gt;  &lt;span class=&quot;token string&quot;&gt;&quot;nodegroupName&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;scale-to-zero&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt;&lt;br&gt;  &lt;span class=&quot;token string&quot;&gt;&quot;scalingConfig&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;&lt;br&gt;     &lt;span class=&quot;token string&quot;&gt;&quot;minSize&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token number&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt;&lt;br&gt;     &lt;span class=&quot;token string&quot;&gt;&quot;maxSize&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token number&quot;&gt;5&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt;&lt;br&gt;     &lt;span class=&quot;token string&quot;&gt;&quot;desiredSize&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token number&quot;&gt;0&lt;/span&gt;&lt;br&gt;  &lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt;&lt;br&gt;  &lt;span class=&quot;token string&quot;&gt;&quot;subnets&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt;&lt;br&gt;     &lt;span class=&quot;token string&quot;&gt;&quot;&amp;lt;subnet-ID1&gt;&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt;&lt;br&gt;     &lt;span class=&quot;token string&quot;&gt;&quot;&amp;lt;subnet-ID2&gt;&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt;&lt;br&gt;     &lt;span class=&quot;token string&quot;&gt;&quot;&amp;lt;subnet-ID3&gt;&quot;&lt;/span&gt;&lt;br&gt;   &lt;span class=&quot;token punctuation&quot;&gt;]&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt;&lt;br&gt;  &lt;span class=&quot;token string&quot;&gt;&quot;nodeRole&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;${NODE_ROLE}&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt;&lt;br&gt;  &lt;span class=&quot;token string&quot;&gt;&quot;labels&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;&lt;br&gt;     &lt;span class=&quot;token string&quot;&gt;&quot;app&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;frontend&quot;&lt;/span&gt;&lt;br&gt;  &lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt;&lt;br&gt;  &lt;span class=&quot;token string&quot;&gt;&quot;tags&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;&lt;br&gt;     &lt;span class=&quot;token string&quot;&gt;&quot;k8s.io/cluster-autoscaler/node-template/label/app&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;frontend&quot;&lt;/span&gt;&lt;br&gt;  &lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;&#39;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;em&gt;Replace the subnet IDs to match your environment.&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;Note that I added a tag &lt;code&gt;k8s.io/cluster-autoscaler/node-template/label/app&lt;/code&gt; with value &lt;code&gt;frontend&lt;/code&gt;. This is the same as running &lt;code&gt;kubectl label nodes &amp;lt;YOUR NODE NAME&amp;gt; app=frontend&lt;/code&gt;. When a node gets created in this node group, it will already have label &lt;code&gt;app=frontend&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;Now that the node group is created, let’s create a pod with a nodeSelector:&lt;/p&gt;
+&lt;pre class=&quot;language-python&quot;&gt;&lt;code class=&quot;language-python&quot;&gt;cat &lt;span class=&quot;token operator&quot;&gt;&amp;lt;&amp;lt;&lt;/span&gt;EOF &lt;span class=&quot;token operator&quot;&gt;|&lt;/span&gt; kubectl &lt;span class=&quot;token builtin&quot;&gt;apply&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;f &lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;&lt;br&gt;apiVersion&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; v1&lt;br&gt;kind&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; Pod&lt;br&gt;metadata&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;&lt;br&gt;  name&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; nginx&lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;test&lt;br&gt;spec&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;&lt;br&gt;  containers&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;&lt;br&gt;  &lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt; name&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; nginx&lt;br&gt;    image&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; nginx&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;latest&lt;br&gt;  nodeSelector&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;&lt;br&gt;    app&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; frontend&lt;br&gt;EOF&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The pod will remain pending for a few minutes. In my case, the pod was in pending state for five minutes.&lt;/p&gt;
+&lt;p&gt;In the meantime, you can see Cluster Autoscaler logs:&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;kubectl -n kube-system logs -f deployment.apps/cluster-autoscaler | grep scale-to-zero&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;Once Cluster Autoscaler adds a new node, the pod will start running. You can enable &lt;a href=&quot;https://aws.amazon.com/blogs/containers/automatically-enable-group-metrics-collection-for-amazon-eks-managed-node-groups/&quot;&gt;Auto Scaling group metrics collection&lt;/a&gt; to see how your node group scales.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://res.craft.do/user/full/9d54cc03-adfe-f72f-3389-565eb7356d1d/doc/1CAE5716-0A06-487B-94D9-ED3A26E55B46/D344F40B-8692-4F2F-921C-422DA115E1B7_2/qBfnOkqluRY1yVqZBaMsB6K5xJgA1idkKOxkkfmzx8Az/Image.jpeg&quot; alt=&quot;Image.jpeg&quot;&gt;&lt;/p&gt;
+&lt;p&gt;Great! Cluster Autoscaler saw that the test pod was pending, so it scaled the node group from 0.&lt;/p&gt;
+&lt;p&gt;Now let’s delete the test pod and verify that the node group goes back to 0:&lt;/p&gt;
+&lt;pre class=&quot;language-python&quot;&gt;&lt;code class=&quot;language-python&quot;&gt;kubectl delete pods nginx&lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;test&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Cluster Autoscaler will notice that the node with app=frontend is not running any pods and scale down the node group (after the cooldown period).&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://res.craft.do/user/full/9d54cc03-adfe-f72f-3389-565eb7356d1d/doc/1CAE5716-0A06-487B-94D9-ED3A26E55B46/EAD1C890-6DB1-455E-BABB-FAF71E5FD960_2/kDUeT7u0sJs3WqNy7SG8FBvHyHi9ALDkNEsxsuL1jtIz/Image.jpeg&quot; alt=&quot;Image.jpeg&quot;&gt;&lt;/p&gt;
+&lt;p&gt;Perfect, the node group is back to having 0 nodes.&lt;/p&gt;
+&lt;h2 id=&quot;conclusion&quot;&gt;Conclusion &lt;a class=&quot;direct-link&quot; href=&quot;#conclusion&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;Scaling down to zero can result in significant cost savings when you have workloads that don’t run 24x7. With Kubernetes 1.24, all you need to do is tag your node groups with labels, taints, or resources, and Cluster Autoscaler will scale your nodes to and from zero.&lt;/p&gt;
+&lt;p&gt;Happy scaling!&lt;/p&gt;
+
+			
+				
+				
+				&lt;img src=&quot;https://blog.realvarez.com/api/ga?v=1&amp;_v=j83&amp;t=pageview&amp;dr=https%3A%2F%2Frss-feed-reader.com&amp;_s=1&amp;dh=realvarez.com&amp;dp=%2Fposts%2Fscale-eks-mng-to-zero%2F&amp;ul=en-us&amp;de=UTF-8&amp;dt=Reduce%20Amazon%20EKS%20cost%20by%20scaling%20node%20groups%20to%20zero&amp;tid=G-B5XRB3YVTR&quot; width=&quot;1&quot; height=&quot;1&quot; style=&quot;display:none&quot; alt=&quot;&quot;&gt;
+			
+		</content>
+	</entry>
+	
+	<entry>
+		<title>Use containerd to handle k8s.gcr.io deprecation</title>
+		<link href="https://blog.realvarez.com/posts/k8s-gcr-io-mirror/"/>
+		<updated>2023-04-03T17:00:00-07:00</updated>
+		<id>https://blog.realvarez.com/posts/k8s-gcr-io-mirror/</id>
+		<content type="html">
+		  &lt;p&gt;The Kubernetes community is getting ready for yet another major change. Until fall of 2022, &lt;code&gt;k8s.gcr.io&lt;/code&gt; container registry hosted many Kubernetes community-managed containers images like Cluster Autoscaler, metrics-server, cluster-proportional-autoscaler. The “&lt;a href=&quot;http://gcr.io/&quot;&gt;gcr.io&lt;/a&gt;” part in the registry is Google Cloud Registry. In order to be vendor neutral, the community is moving away from using Google Cloud Registry to host container images.&lt;/p&gt;
+&lt;p&gt;As a result, starting March 20th, traffic from the old &lt;code&gt;k8s.gcr.io&lt;/code&gt; registry is being redirected to &lt;code&gt;registry.k8s.io&lt;/code&gt;. The older &lt;code&gt;k8s.gcr.io&lt;/code&gt; will remain functioning for sometime but it is eventually getting deprecated.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://res.craft.do/user/full/9d54cc03-adfe-f72f-3389-565eb7356d1d/doc/13FE78CC-1DDD-47D9-B875-EE3FB15F916E/FC421666-8104-4CD9-8C7F-8E4F4BCE2B83_2/6olkWYEK1kl10toAonqYL40P1ZSQIUY2N6iHRwId78kz/Image.jpeg&quot; alt=&quot;Image.jpeg&quot;&gt;&lt;/p&gt;
+&lt;h2 id=&quot;what%E2%80%99s-the-impact%3F&quot;&gt;What’s the impact? &lt;a class=&quot;direct-link&quot; href=&quot;#what%E2%80%99s-the-impact%3F&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;The change that occurred six days after Pi day is unlikely to cause major problems. There are some edge cases. But unless you operate in an airgapped or highly restrictive environment that applies strict domain name access controls, you won’t notice the change.&lt;/p&gt;
+&lt;p&gt;This doesn’t mean that there’s no action required. Now is the time to scan code repositories and clusters for usage of the old registry. Failing to act will result in cluster components failing.&lt;/p&gt;
+&lt;p&gt;Once the old registry goes away, &lt;strong&gt;Kubernetes will not be able to create new Pods&lt;/strong&gt; (unless image is cached) if the container uses an image hosted on &lt;code&gt;k8s.gcr.io&lt;/code&gt;.&lt;/p&gt;
+&lt;h2 id=&quot;what-do-you-need-to-change%3F&quot;&gt;What do you need to change? &lt;a class=&quot;direct-link&quot; href=&quot;#what-do-you-need-to-change%3F&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;Cluster owners and development teams have to ensure they are not using any images stored in the old registry. The change is fairly simple. It&#39;s pretty simple, really.&lt;/p&gt;
+&lt;p&gt;You need to change your manifests to use &lt;code&gt;registry.k8s.io&lt;/code&gt; container registry.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://res.craft.do/user/full/9d54cc03-adfe-f72f-3389-565eb7356d1d/doc/13FE78CC-1DDD-47D9-B875-EE3FB15F916E/EB0981CC-3DC8-49EE-A6F5-A857A69CC949_2/D0F0mQ2JMAl55JNCuS66lUylRznVZywEMdojiRqkc0sz/Image.png&quot; alt=&quot;Image.png&quot;&gt;&lt;/p&gt;
+&lt;p&gt;You can find out which Pods use the old registry using &lt;code&gt;kubectl&lt;/code&gt;:&lt;/p&gt;
+&lt;pre class=&quot;language-bash&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;kubectl get pods --all-namespaces -o &lt;span class=&quot;token assign-left variable&quot;&gt;jsonpath&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;token string&quot;&gt;&quot;{.items[*].spec.containers[*].image}&quot;&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;|&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;\&lt;/span&gt;&lt;span class=&quot;token number&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;&lt;span class=&quot;token number&quot;&gt;31&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;37M0&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;&lt;span class=&quot;token number&quot;&gt;31&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;38m&lt;br&gt;&lt;span class=&quot;token function&quot;&gt;tr&lt;/span&gt; -s &lt;span class=&quot;token string&quot;&gt;&#39;[[:space:]]&#39;&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&#39;\n&#39;&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;|&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;\&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;token function&quot;&gt;sort&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;|&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;\&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;token function&quot;&gt;uniq&lt;/span&gt; -c &lt;span class=&quot;token operator&quot;&gt;|&lt;/span&gt; &lt;span class=&quot;token function&quot;&gt;grep&lt;/span&gt; -i gcr.io&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Here are the Pods in my test cluster that use the old registry:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://res.craft.do/user/full/9d54cc03-adfe-f72f-3389-565eb7356d1d/doc/13FE78CC-1DDD-47D9-B875-EE3FB15F916E/ED8BD697-7BD9-4D58-83FC-833C66606E97_2/dcAQoH7ADPaoupccwi3WFMxt1PkS5ME4zXHHyxjAmdMz/Image.jpeg&quot; alt=&quot;Image.jpeg&quot;&gt;&lt;/p&gt;
+&lt;p&gt;These are the at-risk Pods. I’ll have to update the container registry used in the Pods.&lt;/p&gt;
+&lt;p&gt;When hunting for references to old registry, be sure to include containers that may not be currently running in your cluster.&lt;/p&gt;
+&lt;h2 id=&quot;what-if-i-don%E2%80%99t-control-the-workloads%3F&quot;&gt;What if I don’t control the workloads? &lt;a class=&quot;direct-link&quot; href=&quot;#what-if-i-don%E2%80%99t-control-the-workloads%3F&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;One of my colleagues raised an intriguing question. Is there’s a way to handle this change at a cluster level? He had a valid concern. Many large enterprises might not be able to implement this change in time before the community sunsets &lt;code&gt;k8s.gcr.io&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;I work with many customers that manage large Kubernetes clusters, but have little control over the workloads that get deployed into the cluster. Some of these clusters are shared by hundreds of development teams. The burden is on Central Platform Engineering teams to dissipate this information to individual dev teams (who are busy writing code and not checking Kubernetes news!).&lt;/p&gt;
+&lt;p&gt;So, what can these teams do to make sure when the old registry finally croaks, they don’t get paged for in the middle of the night for &lt;code&gt;ErrImagePull&lt;/code&gt; and &lt;code&gt;ImagePullBackOff&lt;/code&gt;errors?&lt;/p&gt;
+&lt;p&gt;Turns out you can use containerd to handle this redirection at node level. Let’s find out how.&lt;/p&gt;
+&lt;h2 id=&quot;using-mirrors-in-containerd&quot;&gt;Using mirrors in containerd &lt;a class=&quot;direct-link&quot; href=&quot;#using-mirrors-in-containerd&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;Ever since Dockerhub started rate limiting image pulls, many have opted to store images in local registries. Mirrors save network bandwidth, reduce image pull time, and don’t rate-limit.&lt;/p&gt;
+&lt;p&gt;You can configure &lt;code&gt;registry.k8s.io&lt;/code&gt; as a mirror to &lt;code&gt;k8s.gcr.io&lt;/code&gt; in containerd. This configuration will &lt;strong&gt;automatically pull images from &lt;code&gt;registry.k8s.io&lt;/code&gt;&lt;/strong&gt; whenever a Pod uses an image stored in &lt;code&gt;k8s.gcr.io&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;On your worker node, append these lines in the containerd config file at &lt;code&gt;/etc/containerd/config.toml&lt;/code&gt;:&lt;/p&gt;
+&lt;pre class=&quot;language-bash&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;&lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt;plugins.&lt;span class=&quot;token string&quot;&gt;&quot;io.containerd.grpc.v1.cri&quot;&lt;/span&gt;.registry&lt;span class=&quot;token punctuation&quot;&gt;]&lt;/span&gt;&lt;br&gt;   config_path &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;/etc/containerd/certs.d&quot;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The final file on an Amazon EKS cluster looks like this:&lt;/p&gt;
+&lt;pre class=&quot;language-yaml&quot;&gt;&lt;code class=&quot;language-yaml&quot;&gt;version = 2&lt;br&gt;root = &quot;/var/lib/containerd&quot;&lt;br&gt;state = &quot;/run/containerd&quot;&lt;br&gt;&lt;br&gt;&lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt;grpc&lt;span class=&quot;token punctuation&quot;&gt;]&lt;/span&gt;&lt;br&gt;address = &quot;/run/containerd/containerd.sock&quot;&lt;br&gt;&lt;br&gt;&lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt;plugins.&quot;io.containerd.grpc.v1.cri&quot;.containerd&lt;span class=&quot;token punctuation&quot;&gt;]&lt;/span&gt;&lt;br&gt;default_runtime_name = &quot;runc&quot;&lt;br&gt;&lt;br&gt;&lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt;plugins.&quot;io.containerd.grpc.v1.cri&quot;&lt;span class=&quot;token punctuation&quot;&gt;]&lt;/span&gt;&lt;br&gt;sandbox_image = &quot;602401143452.dkr.ecr.us&lt;span class=&quot;token punctuation&quot;&gt;-&lt;/span&gt;west&lt;span class=&quot;token punctuation&quot;&gt;-&lt;/span&gt;2.amazonaws.com/eks/pause&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;3.5&quot;&lt;br&gt;&lt;br&gt;&lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt;plugins.&quot;io.containerd.grpc.v1.cri&quot;.containerd.runtimes.runc&lt;span class=&quot;token punctuation&quot;&gt;]&lt;/span&gt;&lt;br&gt;runtime_type = &quot;io.containerd.runc.v2&quot;&lt;br&gt;&lt;br&gt;&lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt;plugins.&quot;io.containerd.grpc.v1.cri&quot;.containerd.runtimes.runc.options&lt;span class=&quot;token punctuation&quot;&gt;]&lt;/span&gt;&lt;br&gt;SystemdCgroup = true&lt;br&gt;&lt;br&gt;&lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt;plugins.&quot;io.containerd.grpc.v1.cri&quot;.cni&lt;span class=&quot;token punctuation&quot;&gt;]&lt;/span&gt;&lt;br&gt;bin_dir = &quot;/opt/cni/bin&quot;&lt;br&gt;conf_dir = &quot;/etc/cni/net.d&quot;&lt;br&gt;&lt;br&gt;&lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt;plugins.&quot;io.containerd.grpc.v1.cri&quot;.registry&lt;span class=&quot;token punctuation&quot;&gt;]&lt;/span&gt;&lt;br&gt;config_path = &quot;/etc/containerd/certs.d&quot;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Next, create a directory called &lt;code&gt;k8s.gcr.io&lt;/code&gt; and a &lt;code&gt;hosts.toml&lt;/code&gt; file inside it:&lt;/p&gt;
+&lt;pre class=&quot;language-bash&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;&lt;span class=&quot;token function&quot;&gt;mkdir&lt;/span&gt; -p /etc/containerd/certs.d/k8s.gcr.io&lt;br&gt;&lt;br&gt;&lt;span class=&quot;token function&quot;&gt;cat&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;&amp;lt;&amp;lt;&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;EOF&lt;span class=&quot;token bash punctuation&quot;&gt; &lt;span class=&quot;token operator&quot;&gt;&gt;&lt;/span&gt; /etc/containerd/certs.d/k8s.gcr.io/hosts.toml&lt;/span&gt;&lt;br&gt;server = &quot;https://k8s.gcr.io&quot;&lt;br&gt;&lt;br&gt;[host.&quot;https://registry.k8s.io&quot;]&lt;br&gt;capabilities = [&quot;pull&quot;, &quot;resolve&quot;]&lt;br&gt;EOF&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Image pull requests to &lt;code&gt;k8s.gcr.io&lt;/code&gt; will now be sent to &lt;code&gt;registry.k8s.io&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;Restart containerd and kubelet for the change to take effect.&lt;/p&gt;
+&lt;pre class=&quot;language-bash&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;systemctl restart containerd kubelet&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Let’s validate that images are indeed getting pulled from the new registry. I added an entry to my &lt;code&gt;/etc/hosts&lt;/code&gt; file to break &lt;code&gt;k8s.gcr.io&lt;/code&gt;:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://res.craft.do/user/full/9d54cc03-adfe-f72f-3389-565eb7356d1d/doc/13FE78CC-1DDD-47D9-B875-EE3FB15F916E/8AEBA792-CA42-4C8B-9C8D-E34AC55A9847_2/7A4cAKtUBNGVqmUysXRwpW0WGy3cNGz14xxujKlsmc8z/Image.png&quot; alt=&quot;Image.png&quot;&gt;&lt;/p&gt;
+&lt;p&gt;Containerd can no longer pull an image from &lt;code&gt;k8s.gcr.io&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://res.craft.do/user/full/9d54cc03-adfe-f72f-3389-565eb7356d1d/doc/13FE78CC-1DDD-47D9-B875-EE3FB15F916E/D382C5B0-437D-44E3-BAA2-E32032FF7E29_2/zmbCw5wl0LyV1TNJdiEQxCnSqKBS3s4IDZWYljKaLvkz/Image.jpeg&quot; alt=&quot;Image.jpeg&quot;&gt;&lt;/p&gt;
+&lt;p&gt;I can tell &lt;code&gt;ctr&lt;/code&gt; to use the mirror by specifying the &lt;code&gt;—hosts-dir&lt;/code&gt; parameter:&lt;/p&gt;
+&lt;pre class=&quot;language-bash&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;ctr images pull --hosts-dir &lt;span class=&quot;token string&quot;&gt;&quot;/etc/containerd/certs.d&quot;&lt;/span&gt; k8s.gcr.io/pause:latest&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;This time the operation succeeds.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://res.craft.do/user/full/9d54cc03-adfe-f72f-3389-565eb7356d1d/doc/13FE78CC-1DDD-47D9-B875-EE3FB15F916E/94C5856D-E54D-414D-86E6-5B7C70A7989B_2/2bTbUm39iI52DAfS4D9GgH1T1LW5pBbWxTHNIjgS2v4z/Image.jpeg&quot; alt=&quot;Image.jpeg&quot;&gt;&lt;/p&gt;
+&lt;p&gt;Any Pods I create now onwards will use the new registry even though the manifests reference old registry. Here’s a test using a pause container.&lt;/p&gt;
+&lt;pre class=&quot;language-bash&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;kubectl create deployment pause --image k8s.gcr.io/pause&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&quot;https://res.craft.do/user/full/9d54cc03-adfe-f72f-3389-565eb7356d1d/doc/13FE78CC-1DDD-47D9-B875-EE3FB15F916E/88014DF3-E73E-4A60-B881-64C31B8210B6_2/lnuzXKg7G4RwURvQUxrZwRFuBDljKWpX6m01nVydnxoz/Image.jpeg&quot; alt=&quot;Image.jpeg&quot;&gt;&lt;/p&gt;
+&lt;p&gt;Perfect! Kubernetes could create Pods even though I blocked &lt;code&gt;k8s.gcr.io&lt;/code&gt; on the node.&lt;/p&gt;
+&lt;h2 id=&quot;what%E2%80%99s-the-best-way-to-implement-this-in-production%3F&quot;&gt;What’s the best way to implement this in production? &lt;a class=&quot;direct-link&quot; href=&quot;#what%E2%80%99s-the-best-way-to-implement-this-in-production%3F&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;In my little demo, I changed a single node in the cluster. What about the rest of the nodes?&lt;/p&gt;
+&lt;p&gt;There are three ways you can use to implement this change on every node in your cluster:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;The easiest way is to use a daemonset to change to containerd config.toml and add hosts.toml file. IBM cloud has shared &lt;a href=&quot;https://raw.githubusercontent.com/IBM-Cloud/kube-samples/master/containerd-registry-daemonset-example&quot;&gt;this&lt;/a&gt; on Github&lt;/li&gt;
+&lt;li&gt;You can use &lt;a href=&quot;https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/user-data.html&quot;&gt;EC2 user data&lt;/a&gt; or &lt;a href=&quot;https://aws.amazon.com/systems-manager/&quot;&gt;AWS Systems Manager&lt;/a&gt; to make this change when a node gets created&lt;/li&gt;
+&lt;li&gt;You can &lt;a href=&quot;https://docs.aws.amazon.com/eks/latest/userguide/eks-ami-build-scripts.html&quot;&gt;create your own AM&lt;/a&gt;I&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h2 id=&quot;what-if-i-use-docker-as-runtime%3F&quot;&gt;What if I use Docker as runtime? &lt;a class=&quot;direct-link&quot; href=&quot;#what-if-i-use-docker-as-runtime%3F&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;Starting Kubernetes version &lt;code&gt;1.24&lt;/code&gt;, containerd is the only runtime available in Amazon EKS AMIs. If you have an edge case that requires using Docker, there&#39;s still hope.&lt;/p&gt;
+&lt;p&gt;Docker also has support for registry mirrors. &lt;a href=&quot;https://docs.docker.com/registry/recipes/mirror/#configure-the-docker-daemon&quot;&gt;Here’s&lt;/a&gt; the documentation page you need.&lt;/p&gt;
+&lt;h2 id=&quot;don%E2%80%99t-rely-on-stop-gaps&quot;&gt;Don’t rely on stop gaps &lt;a class=&quot;direct-link&quot; href=&quot;#don%E2%80%99t-rely-on-stop-gaps&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;While the solution included in this post works, I recommend only using as a safety measure. The main reason is that you’ll need to customize the Amazon EKS AMI or create your own AMI to use it.&lt;/p&gt;
+&lt;p&gt;You’ll have less operational overhead if you can simply use EKS AMIs as is. The best way to handle this registry deprecation is to update manifests.&lt;/p&gt;
+&lt;p&gt;Oh, and by the way, you can also use mirrors to enforce pull through cache.&lt;/p&gt;
+
+			
+				
+				
+				&lt;img src=&quot;https://blog.realvarez.com/api/ga?v=1&amp;_v=j83&amp;t=pageview&amp;dr=https%3A%2F%2Frss-feed-reader.com&amp;_s=1&amp;dh=realvarez.com&amp;dp=%2Fposts%2Fk8s-gcr-io-mirror%2F&amp;ul=en-us&amp;de=UTF-8&amp;dt=Use%20containerd%20to%20handle%20k8s.gcr.io%20deprecation&amp;tid=G-B5XRB3YVTR&quot; width=&quot;1&quot; height=&quot;1&quot; style=&quot;display:none&quot; alt=&quot;&quot;&gt;
+			
+		</content>
+	</entry>
+</feed>
